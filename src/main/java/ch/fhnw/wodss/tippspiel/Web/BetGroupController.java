@@ -6,6 +6,8 @@ import ch.fhnw.wodss.tippspiel.Domain.BetGroup;
 import ch.fhnw.wodss.tippspiel.Domain.User;
 import ch.fhnw.wodss.tippspiel.Services.BetGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,46 +22,57 @@ public class BetGroupController {
     private BetGroupService service;
 
     @GetMapping(produces = "application/json")
-    @ResponseBody
-    public List<BetGroupDTO> getAllBetGroups() {
-        return null;
+    public ResponseEntity<List<BetGroupDTO>> getAllBetGroups() {
+        return new ResponseEntity<>(service.getAllBetGroups(), HttpStatus.OK);
     }
 
     @GetMapping(value = "/{id}/users", produces = "application/json")
-    @ResponseBody
-    public List<UserAllBetGroupDTO> getAllUsersInBetGroup(@PathVariable Long id) {
-        return null;
+    public ResponseEntity<List<UserAllBetGroupDTO>> getAllUsersInBetGroup(@PathVariable Long id) {
+        List<UserAllBetGroupDTO> result = service.getAllUsersInBetGroup(id);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
 
     @GetMapping(value = "/{id}", produces = "application/json")
-    @ResponseBody
-    public BetGroup getBetGroupById(@PathVariable Long id) {
-        return null;
+    public ResponseEntity<BetGroup> getBetGroupById(@PathVariable Long id) {
+        BetGroup betGroup = service.getBetGroupById(id);
+        if (betGroup == null) {
+            return new ResponseEntity<>(betGroup, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(betGroup, HttpStatus.OK);
     }
 
     @GetMapping(value = "/name/{name}", produces = "application/json")
-    @ResponseBody
-    public BetGroup getBetGroupByName(@PathVariable String name) {
-        return null;
+    public ResponseEntity<BetGroup> getBetGroupByName(@PathVariable String name) {
+        BetGroup betGroup = service.getBetGroupByName(name);
+        if (betGroup == null) {
+            return new ResponseEntity<>(betGroup, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(betGroup, HttpStatus.OK);
     }
 
     @PostMapping(produces = "application/json", consumes = "application/json")
-    @ResponseBody
-    public BetGroup addBetGroup(@Valid @RequestBody BetGroup betGroup, BindingResult result) {
-        return null;
+    public ResponseEntity<BetGroup> addBetGroup(@Valid @RequestBody BetGroup betGroup, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        BetGroup newBetGroup = service.createBetGroup(betGroup);
+        return new ResponseEntity<>(newBetGroup, HttpStatus.OK);
     }
 
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
-    @ResponseBody
-    public BetGroup addUserBetGroup(@PathVariable Long id, @Valid @RequestBody User user, BindingResult result) {
-        return null;
+    public ResponseEntity<BetGroup> addUserBetGroup(@PathVariable Long id, @Valid @RequestBody User user, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        BetGroup betGroup = service.addUser(id, user);
+        return new ResponseEntity<>(betGroup, HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/{id}")
-    @ResponseBody
-    public String deleteBetGroup(@PathVariable Long id) {
-        return null;
+    public ResponseEntity<String> deleteBetGroup(@PathVariable Long id) {
+        service.deleteBetGroup(id);
+        return new ResponseEntity<>("Bet Group deleted", HttpStatus.OK);
     }
 
 
