@@ -12,8 +12,12 @@ import javax.validation.Valid;
 @RequestMapping("/bets")
 public class BetController {
 
+    private final BetService service;
+
     @Autowired
-    private BetService service;
+    public BetController(BetService service) {
+        this.service = service;
+    }
 
     @GetMapping(value = "/{id}", produces = "application/json")
     @ResponseBody

@@ -60,7 +60,7 @@ public class UserController {
 
     @PutMapping(value = "/{id}/passwordChange", consumes = "application/json")
     @ResponseBody
-    public String resetUserPassword(@Valid @RequestBody User user, @PathVariable Long id, BindingResult result) {
+    public String changeUserPassword(@RequestParam("old") String oldPassword, @RequestParam("new") String newPassword, @PathVariable Long id, BindingResult result) {
         return null;
     }
 
