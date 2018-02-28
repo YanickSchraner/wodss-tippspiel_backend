@@ -37,6 +37,7 @@ gradle-app.setting
 
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
+
 ### Java template
 # Compiled class file
 *.class
@@ -95,6 +96,7 @@ Temporary Items
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/dictionaries
+.idea
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/
