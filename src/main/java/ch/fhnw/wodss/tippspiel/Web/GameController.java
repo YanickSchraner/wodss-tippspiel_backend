@@ -1,7 +1,6 @@
 package ch.fhnw.wodss.tippspiel.Web;
 
 import ch.fhnw.wodss.tippspiel.Domain.Game;
-import ch.fhnw.wodss.tippspiel.Persistance.GameRepository;
 import ch.fhnw.wodss.tippspiel.Services.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -13,8 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/games")
 public class GameController {
-    @Autowired
-    private GameRepository repository;
+
     @Autowired
     private GameService service;
 

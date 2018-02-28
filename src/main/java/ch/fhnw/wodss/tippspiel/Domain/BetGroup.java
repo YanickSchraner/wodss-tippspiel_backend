@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Entity
-public class TippGroup {
+public class BetGroup {
 
     @Id
     @GeneratedValue
@@ -41,7 +41,7 @@ public class TippGroup {
     @ManyToMany(fetch = FetchType.EAGER)
     List<User> members;
 
-    public TippGroup(Long id, String name, String password, Integer score, List<User> members){
+    public BetGroup(Long id, String name, String password, Integer score, List<User> members){
         this.id = id;
         this.name = name;
         this.password = password;

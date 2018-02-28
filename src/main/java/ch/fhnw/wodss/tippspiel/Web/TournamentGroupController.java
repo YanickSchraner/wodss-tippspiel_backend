@@ -2,6 +2,7 @@ package ch.fhnw.wodss.tippspiel.Web;
 
 import ch.fhnw.wodss.tippspiel.Domain.TournamentGroup;
 import ch.fhnw.wodss.tippspiel.Persistance.TournamentGroupRepository;
+import ch.fhnw.wodss.tippspiel.Services.TournamentGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,7 @@ import java.util.List;
 public class TournamentGroupController {
 
     @Autowired
-    TournamentGroupRepository repository;
+    private TournamentGroupService service;
 
     @GetMapping(produces = "application/json")
     @ResponseBody

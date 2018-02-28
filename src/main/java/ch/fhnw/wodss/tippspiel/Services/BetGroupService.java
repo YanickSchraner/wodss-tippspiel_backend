@@ -7,5 +7,5 @@ import javax.transaction.Transactional;
 
 @Service
 @Transactional
-public class TippGroupService {
+public class BetGroupService {
 }

@@ -1,4 +1,4 @@
 package ch.fhnw.wodss.tippspiel.Domain;
 
-public class Tipp {
+public class Bet {
 }

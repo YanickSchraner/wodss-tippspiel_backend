@@ -1,4 +1,4 @@
 package ch.fhnw.wodss.tippspiel.DTOs;
 
-public class TippGroupDTO {
+public class BetDTO {
 }

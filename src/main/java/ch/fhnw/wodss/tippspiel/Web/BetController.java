@@ -1,7 +1,7 @@
 package ch.fhnw.wodss.tippspiel.Web;
 
-import ch.fhnw.wodss.tippspiel.Domain.Tipp;
-import ch.fhnw.wodss.tippspiel.Persistance.TippRepository;
+import ch.fhnw.wodss.tippspiel.Domain.Bet;
+import ch.fhnw.wodss.tippspiel.Services.BetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -9,32 +9,33 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/tipps")
-public class TippController {
+@RequestMapping("/bets")
+public class BetController {
+
     @Autowired
-    TippRepository repository;
+    private BetService service;
 
     @GetMapping(value = "/{id}", produces = "application/json")
     @ResponseBody
-    public Tipp getTippById(@PathVariable Long id) {
+    public Bet getBetById(@PathVariable Long id) {
         return null;
     }
 
     @PostMapping(produces = "application/json", consumes = "application/json")
     @ResponseBody
-    public Tipp addTipp(@Valid @RequestBody Tipp tipp, BindingResult result) {
+    public Bet addBet(@Valid @RequestBody Bet bet, BindingResult result) {
         return null;
     }
 
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
     @ResponseBody
-    public Tipp updateTipp(@Valid @RequestBody Tipp newTipp, BindingResult result, @PathVariable Long id) {
+    public Bet updateBet(@Valid @RequestBody Bet newBet, BindingResult result, @PathVariable Long id) {
         return null;
     }
 
     @DeleteMapping(value = "/{id}")
     @ResponseBody
-    public String deleteTipp(@PathVariable Long id) {
+    public String deleteBet(@PathVariable Long id) {
         return null;
     }
 }

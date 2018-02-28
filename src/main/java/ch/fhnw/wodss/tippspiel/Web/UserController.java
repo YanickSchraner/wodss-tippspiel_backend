@@ -1,7 +1,6 @@
 package ch.fhnw.wodss.tippspiel.Web;
 
 import ch.fhnw.wodss.tippspiel.Domain.User;
-import ch.fhnw.wodss.tippspiel.Persistance.UserRepository;
 import ch.fhnw.wodss.tippspiel.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -15,9 +14,7 @@ import java.util.List;
 public class UserController {
 
     @Autowired
-    UserRepository repository;
-    @Autowired
-    UserService service;
+    private UserService service;
 
     @GetMapping(produces = "application/json")
     @ResponseBody
