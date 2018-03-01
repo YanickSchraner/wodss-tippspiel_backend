@@ -44,8 +44,8 @@ public class UserService {
 
     }
 
-    public void changeEmail(Long id, User user) {
-
+    public User changeEmail(Long id, User user) {
+        return null;
     }
 
     public void changePassword(Long id, String oldPassword, String newPassword) {

@@ -24,7 +24,7 @@ public class BetController {
     @GetMapping(value = "/{id}", produces = "application/json")
     public ResponseEntity<Bet> getBetById(@PathVariable Long id) {
         Bet bet = service.getBetById(id);
-        if (bet == null) {
+        if (null == bet) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(service.getBetById(id), HttpStatus.OK);
@@ -35,15 +35,23 @@ public class BetController {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(service.addBet(bet), HttpStatus.OK);
+        Bet newBet = service.addBet(bet);
+        if (null == newBet) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(newBet, HttpStatus.CREATED);
     }
 
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
-    public ResponseEntity<Bet> updateBet(@Valid @RequestBody Bet newBet, @PathVariable Long id, BindingResult result) {
+    public ResponseEntity<Bet> updateBet(@Valid @RequestBody Bet bet, @PathVariable Long id, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(service.updateBet(id, newBet), HttpStatus.OK);
+        Bet newBet = service.updateBet(id, bet);
+        if (null == newBet) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(newBet, HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/{id}")

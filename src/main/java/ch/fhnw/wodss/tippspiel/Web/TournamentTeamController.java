@@ -1,9 +1,10 @@
 package ch.fhnw.wodss.tippspiel.Web;
 
 import ch.fhnw.wodss.tippspiel.Domain.TournamentTeam;
-import ch.fhnw.wodss.tippspiel.Persistance.TournamentTeamRepository;
 import ch.fhnw.wodss.tippspiel.Services.TournamentTeamService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,42 +15,63 @@ import java.util.List;
 @RequestMapping("/tournamentTeams")
 public class TournamentTeamController {
 
+    private final TournamentTeamService service;
+
     @Autowired
-    private TournamentTeamService service;
+    public TournamentTeamController(TournamentTeamService service) {
+        this.service = service;
+    }
 
     @GetMapping(produces = "application/json")
-    @ResponseBody
-    public List<TournamentTeam> getAllTournamentTeams() {
-        return null;
+    public ResponseEntity<List<TournamentTeam>> getAllTournamentTeams() {
+        return new ResponseEntity<>(service.getAllTournamentTeams(), HttpStatus.OK);
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
-    @ResponseBody
-    public TournamentTeam getTournamentTeamById() {
-        return null;
+    public ResponseEntity<TournamentTeam> getTournamentTeamById(@PathVariable Long id) {
+        TournamentTeam team = service.getTournamentTeamById(id);
+        if (null == team) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(team, HttpStatus.OK);
     }
 
     @GetMapping(value = "/name/{name}", produces = "application/json")
-    @ResponseBody
-    public TournamentTeam getTournamentTeamByName(@PathVariable String name) {
-        return null;
+    public ResponseEntity<TournamentTeam> getTournamentTeamByName(@PathVariable String name) {
+        TournamentTeam team = service.getTournamentTeamByName(name);
+        if (null == team) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(team, HttpStatus.OK);
     }
 
     @PostMapping(produces = "application/json")
-    @ResponseBody
-    public TournamentTeam addTournamentTeam(@Valid @RequestBody TournamentTeam tournamentTeam, BindingResult result) {
-        return null;
+    public ResponseEntity<TournamentTeam> addTournamentTeam(@Valid @RequestBody TournamentTeam tournamentTeam, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        TournamentTeam newTeam = service.addTournamentTeam(tournamentTeam);
+        if (null == newTeam) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(newTeam, HttpStatus.CREATED);
     }
 
     @PutMapping(value = "/{id}", produces = "application/json")
-    @ResponseBody
-    public TournamentTeam updateTournamentTeam(@Valid @RequestBody TournamentTeam tournamentTeam, @PathVariable Long id, BindingResult result) {
-        return null;
+    public ResponseEntity<TournamentTeam> updateTournamentTeam(@Valid @RequestBody TournamentTeam tournamentTeam, @PathVariable Long id, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        TournamentTeam newTeam = service.updateTournamentTeam(id, tournamentTeam);
+        if (null == newTeam) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(newTeam, HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/{id}")
-    @ResponseBody
-    public String deleteTournamentTeam(@PathVariable Long id) {
-        return null;
+    public ResponseEntity<String> deleteTournamentTeam(@PathVariable Long id) {
+        service.deleteTournamentTeam(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

@@ -1,8 +1,11 @@
 package ch.fhnw.wodss.tippspiel.Web;
 
+import ch.fhnw.wodss.tippspiel.DTOs.UserRankingDTO;
 import ch.fhnw.wodss.tippspiel.Domain.User;
 import ch.fhnw.wodss.tippspiel.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,60 +16,80 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
+    private final UserService service;
+
     @Autowired
-    private UserService service;
+    public UserController(UserService service) {
+        this.service = service;
+    }
 
     @GetMapping(produces = "application/json")
-    @ResponseBody
-    public List<User> getAllUsers() {
-        return null;
+    public ResponseEntity<List<User>> getAllUsers() {
+        return new ResponseEntity<>(service.getAllUsers(), HttpStatus.OK);
     }
 
     @GetMapping(value = "/ranking", produces = "application/json")
-    @ResponseBody
-    public List<User> getAllUsersForRanking() {
-        return null;
+    public ResponseEntity<List<UserRankingDTO>> getAllUsersForRanking() {
+        return new ResponseEntity<>(service.getAllUsersForRanking(), HttpStatus.OK);
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
-    @ResponseBody
-    public User getUserById(@PathVariable Long id) {
-        return null;
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        User user = service.getUserById(id);
+        if (null == user) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping(value = "/name/{name}", produces = "application/json")
-    @ResponseBody
-    public User getUserByName(@PathVariable String name) {
-        return null;
+    public ResponseEntity<User> getUserByName(@PathVariable String name) {
+        User user = service.getUserByName(name);
+        if (null == user) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PostMapping(produces = "application/json", consumes = "application/json")
-    @ResponseBody
-    public User addUser(@Valid @RequestBody User user, BindingResult result) {
-        return null;
+    public ResponseEntity<User> addUser(@Valid @RequestBody User user, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        User newUser = service.addUser(user);
+        if (null == newUser) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
     @PutMapping(value = "/{id}/email", consumes = "application/json", produces = "application/json")
-    @ResponseBody
-    public User updateUserEmail(@Valid @RequestBody User user, @PathVariable Long id, BindingResult result) {
-        return null;
+    public ResponseEntity<User> updateUserEmail(@Valid @RequestBody User user, @PathVariable Long id, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        User newUser = service.changeEmail(id, user);
+        if (null == newUser) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PutMapping(value = "/{id}/passwordReset")
-    @ResponseBody
-    public String resetUserPassword(@PathVariable Long id) {
-        return null;
+    public ResponseEntity<String> resetUserPassword(@PathVariable Long id) {
+        service.resetPassword(id);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
     @PutMapping(value = "/{id}/passwordChange", consumes = "application/json")
-    @ResponseBody
-    public String changeUserPassword(@RequestParam("old") String oldPassword, @RequestParam("new") String newPassword, @PathVariable Long id, BindingResult result) {
-        return null;
+    public ResponseEntity<String> changeUserPassword(@RequestParam("old") String oldPassword, @RequestParam("new") String newPassword, @PathVariable Long id, BindingResult result) {
+        service.changePassword(id, oldPassword, newPassword);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping(value = "/{id}")
-    @ResponseBody
-    public String deleteUser(@PathVariable Long id) {
-        return null;
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+        service.deleteUser(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

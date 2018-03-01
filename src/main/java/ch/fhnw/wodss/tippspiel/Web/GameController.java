@@ -15,8 +15,12 @@ import java.util.List;
 @RequestMapping("/games")
 public class GameController {
 
+    private final GameService service;
+
     @Autowired
-    private GameService service;
+    public GameController(GameService service) {
+        this.service = service;
+    }
 
     @GetMapping(produces = "application/json")
     public ResponseEntity<List<Game>> getAllGames() {
@@ -26,7 +30,7 @@ public class GameController {
     @GetMapping(value = "/{id}", produces = "application/json")
     public ResponseEntity<Game> getGameById(@PathVariable Long id) {
         Game game = service.getGameById(id);
-        if(game == null){
+        if (null == game) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(game, HttpStatus.OK);
@@ -34,16 +38,31 @@ public class GameController {
 
     @PostMapping(produces = "application/json", consumes = "application/json")
     public ResponseEntity<Game> addGame(@Valid @RequestBody Game game, BindingResult result) {
-        return null;
+        if (result.hasErrors()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        Game newGame = service.addGame(game);
+        if (null == newGame) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(newGame, HttpStatus.CREATED);
     }
 
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Game> updateGame(@Valid @RequestBody Game newGame, BindingResult result, @PathVariable Long id) {
-        return null;
+        if (result.hasErrors()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        Game game = service.updateGame(id, newGame);
+        if (null == game) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(game, HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<String> deleteGame(@PathVariable Long id) {
-        return null;
+        service.deleteGame(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

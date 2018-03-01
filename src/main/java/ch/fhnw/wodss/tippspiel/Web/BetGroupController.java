@@ -18,8 +18,12 @@ import java.util.List;
 @RequestMapping("/betroups")
 public class BetGroupController {
 
+    private final BetGroupService service;
+
     @Autowired
-    private BetGroupService service;
+    public BetGroupController(BetGroupService service) {
+        this.service = service;
+    }
 
     @GetMapping(produces = "application/json")
     public ResponseEntity<List<BetGroupDTO>> getAllBetGroups() {
@@ -36,7 +40,7 @@ public class BetGroupController {
     @GetMapping(value = "/{id}", produces = "application/json")
     public ResponseEntity<BetGroup> getBetGroupById(@PathVariable Long id) {
         BetGroup betGroup = service.getBetGroupById(id);
-        if (betGroup == null) {
+        if (null == betGroup) {
             return new ResponseEntity<>(betGroup, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(betGroup, HttpStatus.OK);
@@ -45,7 +49,7 @@ public class BetGroupController {
     @GetMapping(value = "/name/{name}", produces = "application/json")
     public ResponseEntity<BetGroup> getBetGroupByName(@PathVariable String name) {
         BetGroup betGroup = service.getBetGroupByName(name);
-        if (betGroup == null) {
+        if (null == betGroup) {
             return new ResponseEntity<>(betGroup, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(betGroup, HttpStatus.OK);
@@ -57,7 +61,10 @@ public class BetGroupController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         BetGroup newBetGroup = service.createBetGroup(betGroup);
-        return new ResponseEntity<>(newBetGroup, HttpStatus.OK);
+        if (null == newBetGroup) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(newBetGroup, HttpStatus.CREATED);
     }
 
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
@@ -66,6 +73,9 @@ public class BetGroupController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         BetGroup betGroup = service.addUser(id, user);
+        if (null == betGroup) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         return new ResponseEntity<>(betGroup, HttpStatus.OK);
     }
 
