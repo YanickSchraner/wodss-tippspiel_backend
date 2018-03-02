@@ -32,14 +32,13 @@ public class BetGroup {
     private String password;
 
     @Column
-    @NotNull
     @Min(0)
     @Max(Integer.MAX_VALUE)
     private Integer score;
 
     @Column
     @ManyToMany(fetch = FetchType.EAGER)
-    List<User> members;
+    private List<User> members;
 
     public BetGroup(Long id, String name, String password, Integer score, List<User> members){
         this.id = id;
