@@ -25,7 +25,8 @@ public class TournamentTeam {
     private String name;
 
     @Column
-    @OneToMany(fetch = FetchType.EAGER)
+    @NotNull
+    @ManyToOne(fetch = FetchType.EAGER)
     private TournamentGroup group;
 
     public TournamentTeam(Long id, String name, TournamentGroup group) {

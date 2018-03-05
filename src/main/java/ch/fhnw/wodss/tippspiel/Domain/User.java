@@ -28,7 +28,7 @@ public class User {
 
     @Column
     @NotNull
-    @Size(min = 10, max = 300)
+    @Size(min = 10, max = 1024)
     private String password;
 
     @Column
@@ -37,10 +37,12 @@ public class User {
     private String email;
 
     @Column
-    @OneToMany(fetch = FetchType.EAGER)
+    @NotNull
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "Bet")
     List<Bet> bets;
 
     @Column
+    @NotNull
     @ManyToMany(fetch = FetchType.EAGER)
     List<BetGroup> betGroup;
 
