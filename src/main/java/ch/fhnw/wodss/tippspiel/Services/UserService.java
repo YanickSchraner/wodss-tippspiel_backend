@@ -2,12 +2,15 @@ package ch.fhnw.wodss.tippspiel.Services;
 
 import ch.fhnw.wodss.tippspiel.DTOs.UserRankingDTO;
 import ch.fhnw.wodss.tippspiel.Domain.User;
+import ch.fhnw.wodss.tippspiel.Exception.IllegalActionException;
+import ch.fhnw.wodss.tippspiel.Exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.Persistance.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -21,39 +24,65 @@ public class UserService {
     }
 
     public List<User> getAllUsers() {
-        return null;
+        return repository.findAll();
     }
 
     public List<UserRankingDTO> getAllUsersForRanking() {
+        // Todo DTO
         return null;
     }
 
     public User getUserById(Long id) {
-        return null;
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Can't find a user with id: " + id));
     }
 
     public User getUserByName(String name) {
-        return null;
+        return repository.findUserByNameEquals(name)
+                .orElseThrow(() -> new ResourceNotFoundException("Can't find a user with name: " + name));
     }
 
     public User addUser(User user) {
-        return null;
+        if (repository.findUserByNameEquals(user.getName()).isPresent()) {
+            throw new IllegalActionException("User with name: " + user.getName() + " already exists");
+        }
+        if (repository.findUserByEmailEquals(user.getEmail()).isPresent()) {
+            throw new IllegalActionException("User with email: " + user.getEmail() + " already exists");
+        }
+        return repository.save(user);
     }
 
     public void deleteUser(Long id) {
-
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+        } else {
+            throw new ResourceNotFoundException("Can't find the given user to delete");
+        }
     }
 
     public User changeEmail(Long id, User user) {
-        return null;
+        Optional<User> userToUpdate = repository.findById(id);
+        if (userToUpdate.isPresent()) {
+            userToUpdate.get().setEmail(user.getEmail());
+            return repository.save(userToUpdate.get());
+        } else {
+            throw new ResourceNotFoundException("Can't find the given user to change the email address.");
+        }
     }
 
     public void changePassword(Long id, String oldPassword, String newPassword) {
-
+        // Todo how to do this with spring security and argon2?
+        Optional<User> userToUpdate = repository.findById(id);
+        if (userToUpdate.isPresent()) {
+            userToUpdate.get().setPassword(newPassword);
+            repository.save(userToUpdate.get());
+        } else {
+            throw new ResourceNotFoundException("Can't find the given user to change the password.");
+        }
     }
 
     public void resetPassword(Long id) {
-
+        // Todo with email integration
     }
 
 

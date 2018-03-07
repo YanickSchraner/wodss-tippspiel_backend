@@ -2,13 +2,13 @@ package ch.fhnw.wodss.tippspiel.Persistance;
 
 import ch.fhnw.wodss.tippspiel.Domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
-import java.util.List;
+import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    User getUserByName(String name);
+    Optional<User> findUserByNameEquals(String name);
+
+    Optional<User> findUserByEmailEquals(String email);
 
 }
