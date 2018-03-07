@@ -66,6 +66,11 @@ public class BetGroupService {
         }
     }
 
+    // Todo
+    public BetGroup removeUser(Long betGroupId, User user) {
+        return null;
+    }
+
     public BetGroup createBetGroup(BetGroup betGroup) {
         if (betGroupRepository.findBetGroupByNameEquals(betGroup.getName()).isPresent()) {
             throw new IllegalActionException("A bet group with name: " + betGroup.getName() + " already exists.");
@@ -73,6 +78,7 @@ public class BetGroupService {
         return betGroupRepository.save(betGroup);
     }
 
+    // Todo make private if we disable the deletion of a whole group
     public void deleteBetGroup(Long id) {
         if (betGroupRepository.hasMembers(id)) {
             throw new IllegalActionException("Can't delete a bet group with bet group members");

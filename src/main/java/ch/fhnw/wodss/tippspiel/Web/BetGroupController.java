@@ -58,8 +58,8 @@ public class BetGroupController {
         return new ResponseEntity<>(newBetGroup, HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
-    public ResponseEntity<BetGroup> addUserBetGroup(@PathVariable Long id, @Valid @RequestBody User user, BindingResult result) {
+    @PutMapping(value = "/addUser/{id}", produces = "application/json", consumes = "application/json")
+    public ResponseEntity<BetGroup> addUserToBetGroup(@PathVariable Long id, @Valid @RequestBody User user, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -67,6 +67,13 @@ public class BetGroupController {
         return new ResponseEntity<>(betGroup, HttpStatus.OK);
     }
 
+    // Todo
+    @PutMapping(value = "/removeUser/{id}", produces = "application/json", consumes = "application/json")
+    public ResponseEntity<BetGroup> removeUserFromBetGroup(@PathVariable Long id, @Valid @RequestBody User user, BindingResult result) {
+        return null;
+    }
+
+    // Todo disable this route if we disable this feature
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<String> deleteBetGroup(@PathVariable Long id) {
         service.deleteBetGroup(id);
