@@ -45,13 +45,13 @@ public class BetGroupService {
     }
 
     public BetGroup getBetGroupByName(String name) {
-        return betGroupRepository.getBetGroupByName(name)
+        return betGroupRepository.findBetGroupByNameEquals(name)
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find bet group with name: " + name));
     }
 
     public BetGroup addUser(Long betGroupId, User user) {
         userRepository.findById(user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find user with id: " + user.getId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find given user."));
         BetGroup betGroup = betGroupRepository.findById(betGroupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find bet group with id: " + betGroupId));
         boolean containsUser = betGroupRepository.existsBetGroupByMembersIsWithin(user.getId());
@@ -62,25 +62,25 @@ public class BetGroupService {
             betGroup.setId(betGroupId);
             return betGroupRepository.save(betGroup);
         } else {
-            throw new IllegalActionException("User with name: " + user.getName() + " already exists in bet group.");
+            throw new IllegalActionException("User with name: " + user.getName() + " is already part of the given bet group.");
         }
     }
 
     public BetGroup createBetGroup(BetGroup betGroup) {
-        if (betGroupRepository.findByNameEquals(betGroup.getName()).isPresent()) {
+        if (betGroupRepository.findBetGroupByNameEquals(betGroup.getName()).isPresent()) {
             throw new IllegalActionException("A bet group with name: " + betGroup.getName() + " already exists.");
         }
         return betGroupRepository.save(betGroup);
     }
 
     public void deleteBetGroup(Long id) {
-        if (betGroupRepository.existsBetGroupByGroupId(id)) {
+        if (betGroupRepository.hasMembers(id)) {
             throw new IllegalActionException("Can't delete a bet group with bet group members");
         }
         if (betGroupRepository.existsById(id)) {
             betGroupRepository.deleteById(id);
         } else {
-            throw new ResourceNotFoundException("Can't find a tournament group with id: " + id);
+            throw new ResourceNotFoundException("Can't find a bet group with id: " + id);
         }
     }
 

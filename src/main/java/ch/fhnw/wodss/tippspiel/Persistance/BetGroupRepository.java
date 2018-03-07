@@ -11,15 +11,14 @@ import java.util.Optional;
 
 public interface BetGroupRepository extends JpaRepository<BetGroup, Long> {
 
-    Optional<BetGroup> getBetGroupByName(String name);
-
-    Optional<BetGroup> findByNameEquals(String name);
+    Optional<BetGroup> findBetGroupByNameEquals(String name);
 
     @Query("SELECT b.User from BetGroup b where b.id = :betGroup")
     List<User> getUserInBetGroup(@Param("betGroup") Long betGroupId);
 
     boolean existsBetGroupByMembersIsWithin(Long userId);
 
-    boolean existsBetGroupByGroupId(Long betGroupId);
+    @Query("SELECT count(user) FROM BetGroup betGroup WHERE :id in (betGroup.members)")
+    boolean hasMembers(@Param("id") Long id);
 
 }
