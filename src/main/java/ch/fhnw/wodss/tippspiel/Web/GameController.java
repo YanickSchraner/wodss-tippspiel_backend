@@ -30,9 +30,6 @@ public class GameController {
     @GetMapping(value = "/{id}", produces = "application/json")
     public ResponseEntity<Game> getGameById(@PathVariable Long id) {
         Game game = service.getGameById(id);
-        if (null == game) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
         return new ResponseEntity<>(game, HttpStatus.OK);
     }
 
@@ -42,9 +39,6 @@ public class GameController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         Game newGame = service.addGame(game);
-        if (null == newGame) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
         return new ResponseEntity<>(newGame, HttpStatus.CREATED);
     }
 
@@ -54,9 +48,6 @@ public class GameController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         Game game = service.updateGame(id, newGame);
-        if (null == game) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
         return new ResponseEntity<>(game, HttpStatus.OK);
     }
 

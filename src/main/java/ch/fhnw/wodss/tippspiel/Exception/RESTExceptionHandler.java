@@ -16,4 +16,13 @@ public class RESTExceptionHandler {
 
         return new ResponseEntity<ExceptionResponse>(response, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(IllegalActionException.class)
+    public ResponseEntity<ExceptionResponse> illegalAction(IllegalActionException ex) {
+        ExceptionResponse response = new ExceptionResponse();
+        response.setErrorCode("Illegal Action");
+        response.setErrorMessage(ex.getMessage());
+
+        return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
+    }
 }
