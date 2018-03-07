@@ -25,6 +25,7 @@ public class TournamentGroupService {
     }
 
     public List<TournamentGroup> getAllTournamentGroups() {
+
         return tournamentGroupRepository.findAll();
     }
 
