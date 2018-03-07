@@ -1,6 +1,8 @@
 package ch.fhnw.wodss.tippspiel.Services;
 
 import ch.fhnw.wodss.tippspiel.Domain.TournamentGroup;
+import ch.fhnw.wodss.tippspiel.Exception.IllegalActionException;
+import ch.fhnw.wodss.tippspiel.Exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.Persistance.TournamentGroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,26 +22,34 @@ public class TournamentGroupService {
     }
 
     public List<TournamentGroup> getAllTournamentGroups() {
-        return null;
+        return repository.findAll();
     }
 
     public TournamentGroup getTournamentGroupById(Long id) {
-        return null;
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find TournamentGroup with id: " + id));
     }
 
     public TournamentGroup getTournamentGroupByName(String name) {
-        return null;
+        return repository.getTournamentGroupByName(name)
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find TournamentGroup with name: " + name));
     }
 
     public TournamentGroup addTournamentGroup(TournamentGroup tournamentGroup) {
-        return null;
+        return repository.save(tournamentGroup);
     }
 
     public TournamentGroup updateTournamentGroup(Long id, TournamentGroup tournamentGroup) {
-        return null;
+        if (!repository.existsById(id)) {
+            throw new IllegalActionException("No TournamentGroup was found to change");
+        }
+        tournamentGroup.setId(id);
+        return repository.save(tournamentGroup);
     }
 
     public void deleteTournamentGroup(Long id) {
-
+        TournamentGroup tournamentGroup = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find TournamentGroup with id: " + id));
+        repository.delete(tournamentGroup);
     }
 }
