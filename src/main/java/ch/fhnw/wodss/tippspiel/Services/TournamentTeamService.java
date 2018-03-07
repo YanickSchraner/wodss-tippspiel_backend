@@ -1,6 +1,8 @@
 package ch.fhnw.wodss.tippspiel.Services;
 
 import ch.fhnw.wodss.tippspiel.Domain.TournamentTeam;
+import ch.fhnw.wodss.tippspiel.Exception.IllegalActionException;
+import ch.fhnw.wodss.tippspiel.Exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.Persistance.TournamentTeamRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,26 +22,42 @@ public class TournamentTeamService {
     }
 
     public List<TournamentTeam> getAllTournamentTeams() {
-        return null;
+        return repository.findAll();
     }
 
     public TournamentTeam getTournamentTeamById(Long id) {
-        return null;
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Can't find a tournament team with id: " + id));
     }
 
     public TournamentTeam getTournamentTeamByName(String name) {
-        return null;
+        return repository.findTournamentTeamByNameEquals(name)
+                .orElseThrow(() -> new ResourceNotFoundException("Can't find a tournament team with name: " + name));
     }
 
     public TournamentTeam addTournamentTeam(TournamentTeam tournamentTeam) {
+        if (repository.findTournamentTeamByNameEquals(tournamentTeam.getName()).isPresent()) {
+            throw new IllegalActionException("There is already a tournament team with the name: " + tournamentTeam.getName());
+        }
         return null;
     }
 
     public TournamentTeam updateTournamentTeam(Long id, TournamentTeam tournamentTeam) {
-        return null;
+        if (repository.existsById(id)) {
+            tournamentTeam.setId(id);
+            return repository.save(tournamentTeam);
+        }
+        throw new ResourceNotFoundException("Can't find a tournament team with id: " + id + " to update.");
     }
 
     public void deleteTournamentTeam(Long id) {
-
+        if (repository.hasGames(id)) {
+            throw new IllegalActionException("Can't delete a tournament team with open games.");
+        }
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+        } else {
+            throw new ResourceNotFoundException("Can't find a tournament team with id: " + id + " to delete.");
+        }
     }
 }
