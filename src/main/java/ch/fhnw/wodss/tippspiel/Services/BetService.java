@@ -45,7 +45,7 @@ public class BetService {
 
     public Bet updateBet(Long id, Bet bet) {
         if (!betRepository.existsById(id)) {
-            //throw Exception
+            throw new IllegalActionException("No bet was found to change");
         }
         Game game = gameRepository.findById(bet.getGame().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find Game in Bet with id: "
