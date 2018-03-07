@@ -1,6 +1,7 @@
 package ch.fhnw.wodss.tippspiel.Services;
 
 import ch.fhnw.wodss.tippspiel.Domain.Game;
+import ch.fhnw.wodss.tippspiel.Exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.Persistance.GameRepository;
 import ch.fhnw.wodss.tippspiel.Persistance.TournamentGroupRepository;
 import ch.fhnw.wodss.tippspiel.Persistance.TournamentTeamRepository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -26,28 +28,44 @@ public class GameService {
     }
 
     public List<Game> getAllGames() {
-        return null;
+        return gameRepository.findAll();
     }
 
     public Game getGameById(Long id) {
-        return null;
+        return gameRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find a game with id " + id));
     }
 
-
     public Game addGame(Game game) {
-        return game;
+        return gameRepository.save(game);
     }
 
     public Game updateGame(Long id, Game game) {
-        return null;
+        Optional<Game> oldGame = gameRepository.findById(id);
+        if (oldGame.isPresent()) {
+            game.setId(id);
+            return gameRepository.save(game);
+        }
+        throw new ResourceNotFoundException("Could not find game with id " + id + " to update.");
     }
 
     public void deleteGame(Long id) {
-
+        if (gameRepository.existsById(id)) {
+            gameRepository.deleteById(id);
+        } else {
+            throw new ResourceNotFoundException("Could not find game with id " + id + " to delete.");
+        }
     }
 
     public void setResult(Long id, int homeTeamScore, int awayTeamScore) {
-
+        Optional<Game> game = gameRepository.findById(id);
+        if (game.isPresent()) {
+            game.get().setHomeTeamGoals(homeTeamScore);
+            game.get().setAwayTeamGoals(awayTeamScore);
+            gameRepository.save(game.get());
+        } else {
+            throw new ResourceNotFoundException("Could not find game with id " + id + " to update the score.");
+        }
     }
 
 }
