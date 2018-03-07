@@ -35,18 +35,12 @@ public class GameController {
 
     @PostMapping(produces = "application/json", consumes = "application/json")
     public ResponseEntity<Game> addGame(@Valid @RequestBody Game game, BindingResult result) {
-        if (result.hasErrors()) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
         Game newGame = service.addGame(game);
         return new ResponseEntity<>(newGame, HttpStatus.CREATED);
     }
 
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Game> updateGame(@Valid @RequestBody Game newGame, BindingResult result, @PathVariable Long id) {
-        if (result.hasErrors()) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
         Game game = service.updateGame(id, newGame);
         return new ResponseEntity<>(game, HttpStatus.OK);
     }

@@ -30,18 +30,12 @@ public class TournamentTeamController {
     @GetMapping(value = "/{id}", produces = "application/json")
     public ResponseEntity<TournamentTeam> getTournamentTeamById(@PathVariable Long id) {
         TournamentTeam team = service.getTournamentTeamById(id);
-        if (null == team) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
         return new ResponseEntity<>(team, HttpStatus.OK);
     }
 
     @GetMapping(value = "/name/{name}", produces = "application/json")
     public ResponseEntity<TournamentTeam> getTournamentTeamByName(@PathVariable String name) {
         TournamentTeam team = service.getTournamentTeamByName(name);
-        if (null == team) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
         return new ResponseEntity<>(team, HttpStatus.OK);
     }
 
@@ -51,9 +45,6 @@ public class TournamentTeamController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         TournamentTeam newTeam = service.addTournamentTeam(tournamentTeam);
-        if (null == newTeam) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
         return new ResponseEntity<>(newTeam, HttpStatus.CREATED);
     }
 
@@ -63,9 +54,6 @@ public class TournamentTeamController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         TournamentTeam newTeam = service.updateTournamentTeam(id, tournamentTeam);
-        if (null == newTeam) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
         return new ResponseEntity<>(newTeam, HttpStatus.OK);
     }
 

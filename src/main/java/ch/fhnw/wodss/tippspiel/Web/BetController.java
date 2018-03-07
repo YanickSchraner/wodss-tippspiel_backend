@@ -24,9 +24,6 @@ public class BetController {
     @GetMapping(value = "/{id}", produces = "application/json")
     public ResponseEntity<Bet> getBetById(@PathVariable Long id) {
         Bet bet = service.getBetById(id);
-        if (null == bet) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
         return new ResponseEntity<>(service.getBetById(id), HttpStatus.OK);
     }
 
@@ -36,9 +33,6 @@ public class BetController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         Bet newBet = service.addBet(bet);
-        if (null == newBet) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
         return new ResponseEntity<>(newBet, HttpStatus.CREATED);
     }
 
@@ -48,9 +42,6 @@ public class BetController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         Bet newBet = service.updateBet(id, bet);
-        if (null == newBet) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
         return new ResponseEntity<>(newBet, HttpStatus.OK);
     }
 

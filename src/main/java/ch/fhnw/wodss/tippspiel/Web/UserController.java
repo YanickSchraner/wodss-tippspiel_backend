@@ -36,18 +36,12 @@ public class UserController {
     @GetMapping(value = "/{id}", produces = "application/json")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = service.getUserById(id);
-        if (null == user) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping(value = "/name/{name}", produces = "application/json")
     public ResponseEntity<User> getUserByName(@PathVariable String name) {
         User user = service.getUserByName(name);
-        if (null == user) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
@@ -57,9 +51,6 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         User newUser = service.addUser(user);
-        if (null == newUser) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
@@ -69,9 +60,6 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         User newUser = service.changeEmail(id, user);
-        if (null == newUser) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
