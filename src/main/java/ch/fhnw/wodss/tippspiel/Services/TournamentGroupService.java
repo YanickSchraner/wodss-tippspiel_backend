@@ -1,7 +1,10 @@
 package ch.fhnw.wodss.tippspiel.Services;
 
 import ch.fhnw.wodss.tippspiel.Domain.TournamentGroup;
+import ch.fhnw.wodss.tippspiel.Exception.IllegalActionException;
+import ch.fhnw.wodss.tippspiel.Exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.Persistance.TournamentGroupRepository;
+import ch.fhnw.wodss.tippspiel.Persistance.TournamentTeamRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,34 +15,53 @@ import java.util.List;
 @Transactional
 public class TournamentGroupService {
 
-    private final TournamentGroupRepository repository;
+    private final TournamentGroupRepository tournamentGroupRepository;
+    private final TournamentTeamRepository tournamentTeamRepository;
 
     @Autowired
-    public TournamentGroupService(TournamentGroupRepository repository) {
-        this.repository = repository;
+    public TournamentGroupService(TournamentGroupRepository tournamentGroupRepository, TournamentTeamRepository tournamentTeamRepository) {
+        this.tournamentGroupRepository = tournamentGroupRepository;
+        this.tournamentTeamRepository = tournamentTeamRepository;
     }
 
     public List<TournamentGroup> getAllTournamentGroups() {
-        return null;
+        return tournamentGroupRepository.findAll();
     }
 
     public TournamentGroup getTournamentGroupById(Long id) {
-        return null;
+        return tournamentGroupRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Can't find a tournament group with id: " + id));
     }
 
     public TournamentGroup getTournamentGroupByName(String name) {
-        return null;
+        return tournamentGroupRepository.findByNameEquals(name)
+                .orElseThrow(() -> new ResourceNotFoundException("Can't find a tournament group with name: " + name));
     }
 
     public TournamentGroup addTournamentGroup(TournamentGroup tournamentGroup) {
-        return null;
+        if (tournamentGroupRepository.findByNameEquals(tournamentGroup.getName()).isPresent()) {
+            throw new IllegalActionException("A tournament group with name: " + tournamentGroup.getName() + " already exists.");
+        }
+        return tournamentGroupRepository.save(tournamentGroup);
     }
 
     public TournamentGroup updateTournamentGroup(Long id, TournamentGroup tournamentGroup) {
-        return null;
+        if (tournamentGroupRepository.existsById(id)) {
+            tournamentGroup.setId(id);
+            return tournamentGroupRepository.save(tournamentGroup);
+        }
+        throw new ResourceNotFoundException("Can't find a tournament group with id: " + id);
     }
 
     public void deleteTournamentGroup(Long id) {
+        if (tournamentTeamRepository.existsTournamentTeamsByGroup_Id(id)) {
+            throw new IllegalActionException("Can't delete a tournament group with tournament team members");
+        }
+        if (tournamentGroupRepository.existsById(id)) {
+            tournamentGroupRepository.deleteById(id);
+        } else {
+            throw new ResourceNotFoundException("Can't find a tournament group with id: " + id);
+        }
 
     }
 }

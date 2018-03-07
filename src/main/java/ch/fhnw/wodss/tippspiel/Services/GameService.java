@@ -5,8 +5,6 @@ import ch.fhnw.wodss.tippspiel.Exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.Exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.Persistance.BetRepository;
 import ch.fhnw.wodss.tippspiel.Persistance.GameRepository;
-import ch.fhnw.wodss.tippspiel.Persistance.TournamentGroupRepository;
-import ch.fhnw.wodss.tippspiel.Persistance.TournamentTeamRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,16 +17,12 @@ import java.util.Optional;
 @Transactional
 public class GameService {
     private final GameRepository gameRepository;
-    private final TournamentTeamRepository tournamentTeamRepository;
-    private final TournamentGroupRepository tournamentGroupRepository;
     private final BetRepository betRepository;
 
 
     @Autowired
-    public GameService(GameRepository gameRepository, TournamentTeamRepository tournamentTeamRepository, TournamentGroupRepository tournamentGroupRepository, BetRepository betRepository) {
+    public GameService(GameRepository gameRepository, BetRepository betRepository) {
         this.gameRepository = gameRepository;
-        this.tournamentTeamRepository = tournamentTeamRepository;
-        this.tournamentGroupRepository = tournamentGroupRepository;
         this.betRepository = betRepository;
     }
 
