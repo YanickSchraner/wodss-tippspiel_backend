@@ -2,6 +2,8 @@ package ch.fhnw.wodss.tippspiel.Services;
 
 import ch.fhnw.wodss.tippspiel.Domain.Bet;
 import ch.fhnw.wodss.tippspiel.Domain.Game;
+import ch.fhnw.wodss.tippspiel.Exception.IllegalActionException;
+import ch.fhnw.wodss.tippspiel.Exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.Persistance.BetRepository;
 import ch.fhnw.wodss.tippspiel.Persistance.GameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,58 +26,52 @@ public class BetService {
     }
 
     public Bet getBetById(Long id) {
-        return betRepository.getOne(id);
+        return betRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find Bet with id: " + id));
     }
 
     public Bet addBet(Bet bet) {
-        Game game = gameRepository.getOne(bet.getGame().getId());
-        if (null == game) {
-            //throw Exception
-        }
+        Game game = gameRepository.findById(bet.getGame().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find Game in Bet with id: "
+                        + bet.getGame().getId()));
         Calendar cal = Calendar.getInstance();
         // Check if date time before game start time
         if (game.getDateTime().before(cal.getTime())) {
             return betRepository.save(bet);
         } else {
-            //throw Exception
+            throw new IllegalActionException("The game has started. The bet can't be accepted.");
         }
-        return null;
     }
 
     public Bet updateBet(Long id, Bet bet) {
         if (!betRepository.existsById(id)) {
-            //throw Exception
+            throw new IllegalActionException("No bet was found to change");
         }
-        Game game = gameRepository.getOne(bet.getGame().getId());
-        if (null == game) {
-            //throw Exception
-        }
+        Game game = gameRepository.findById(bet.getGame().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find Game in Bet with id: "
+                        + bet.getGame().getId()));
         Calendar cal = Calendar.getInstance();
         // Check if date time before game start time
         if (game.getDateTime().before(cal.getTime())) {
             bet.setId(id);
             return betRepository.save(bet);
         } else {
-            //throw Exception
+            throw new IllegalActionException("The game has started. The bet can't be updated.");
         }
-        return null;
     }
 
     public void deleteBet(Long id) {
-        Bet bet = betRepository.getOne(id);
-        if (null == bet) {
-            //throw Exception
-        }
-        Game game = gameRepository.getOne(bet.getGame().getId());
-        if (null == game) {
-            //throw Exception
-        }
+        Bet bet = betRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find Bet with id: " + id));
+        Game game = gameRepository.findById(bet.getGame().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find Game in Bet with id: "
+                        + bet.getGame().getId()));
         Calendar cal = Calendar.getInstance();
         // Check if date time before game start time
         if (game.getDateTime().before(cal.getTime())) {
             betRepository.delete(bet);
         } else {
-            //throw Exception
+            throw new IllegalActionException("The game has started. The bet can't be deleted.");
         }
     }
 
