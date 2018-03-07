@@ -4,6 +4,7 @@ import ch.fhnw.wodss.tippspiel.DTOs.BetGroupDTO;
 import ch.fhnw.wodss.tippspiel.DTOs.UserAllBetGroupDTO;
 import ch.fhnw.wodss.tippspiel.Domain.BetGroup;
 import ch.fhnw.wodss.tippspiel.Domain.User;
+import ch.fhnw.wodss.tippspiel.Exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.Persistance.BetGroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,19 +25,25 @@ public class BetGroupService {
     }
 
     public List<UserAllBetGroupDTO> getAllUsersInBetGroup(Long id) {
+        List<User> users = repository.getUserInBetGroup(id);
+        // Todo Convert to DTO
         return null;
     }
 
     public List<BetGroupDTO> getAllBetGroups() {
+        List<BetGroup> betGroups = repository.findAll();
+        // ToDo Convert to DTO
         return null;
     }
 
     public BetGroup getBetGroupById(Long id) {
-        return null;
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find BetGroup with id: " + id));
     }
 
     public BetGroup getBetGroupByName(String name) {
-        return null;
+        return repository.getBetGroupByName(name)
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find BetGroup with name: " + name));
     }
 
     public BetGroup addUser(Long betGroupId, User user) {

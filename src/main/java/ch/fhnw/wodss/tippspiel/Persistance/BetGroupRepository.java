@@ -7,12 +7,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface BetGroupRepository extends JpaRepository<BetGroup, Long> {
 
-    BetGroup getBetGroupByName(String name);
+    Optional<BetGroup> getBetGroupByName(String name);
 
     @Query("SELECT b.User from BetGroup b where b.id = :betGroup")
-    List<User> getUserInBetGroup(@Param("betGroup") long betGroupId);
+    List<User> getUserInBetGroup(@Param("betGroup") Long betGroupId);
 
 }
