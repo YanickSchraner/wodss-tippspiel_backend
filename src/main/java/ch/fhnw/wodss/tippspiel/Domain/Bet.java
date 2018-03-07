@@ -1,7 +1,9 @@
 package ch.fhnw.wodss.tippspiel.Domain;
 
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.Max;
