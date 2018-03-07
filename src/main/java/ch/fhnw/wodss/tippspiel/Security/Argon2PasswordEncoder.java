@@ -8,9 +8,10 @@ public class Argon2PasswordEncoder implements PasswordEncoder {
 
     private static final Argon2 ARGON2 = Argon2Factory.create();
 
-    private static final int ITERATIONS = 2;
-    private static final int MEMORY = 65536;
-    private static final int PARALLELISM = 1;
+    // Parameters set to use as much CPU and Memory on the server and get a hashing time of 1 second.
+    private static final int ITERATIONS = 3000;
+    private static final int MEMORY = 524288; // About 512 MB RAM
+    private static final int PARALLELISM = 2;
 
     @Override
     public String encode(CharSequence rawPassword) {
