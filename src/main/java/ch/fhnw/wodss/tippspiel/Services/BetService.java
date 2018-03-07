@@ -69,7 +69,7 @@ public class BetService {
         Calendar cal = Calendar.getInstance();
         // Check if date time before game start time
         if (game.getDateTime().before(cal.getTime())) {
-            betRepository.delete(bet);
+            betRepository.deleteById(id);
         } else {
             throw new IllegalActionException("The game has started. The bet can't be deleted.");
         }
