@@ -19,12 +19,6 @@ public class LoggingAspect {
         logger.info("Controller method called: " + jp.getSignature());
     }
 
-    @AfterThrowing(pointcut = "execution(* ch.fhnw.wodss.tippspiel.configuration.RESTAuthenticationFilter.attemptAuthentication(..))",
-            throwing = "error")
-    public void logInvalidLoginDataReceived(JoinPoint jp, Throwable error) {
-        logger.warn("Invalid login data format received");
-    }
-
     @AfterThrowing(pointcut = "execution(* ch.fhnw.wodss.tippspiel.configuration.UserDetailsServiceImpl.loadUserByUsername(..))",
             throwing = "error")
     public void logUnknownUsernameLogin(JoinPoint jp, Throwable error) {
