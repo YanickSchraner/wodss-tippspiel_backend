@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -50,7 +52,11 @@ public class User {
     @Column
     private boolean dailyResults = true;
 
-    public User(Long id, String name, String password,  String email, List<Bet> bets, List<BetGroup> betGroup, boolean reminders, boolean dailyResults) {
+    @ManyToMany
+    @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
+
+    public User(Long id, String name, String password,  String email, List<Bet> bets, List<BetGroup> betGroup, boolean reminders, boolean dailyResults, Set<Role> roles) {
         this.id = id;
         this.name = name;
         this.password = password;
@@ -59,5 +65,6 @@ public class User {
         this.betGroup = betGroup;
         this.reminders = reminders;
         this.dailyResults = dailyResults;
+        this.roles = roles;
     }
 }

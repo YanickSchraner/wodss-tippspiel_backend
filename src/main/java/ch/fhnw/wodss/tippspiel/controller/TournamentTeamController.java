@@ -5,6 +5,7 @@ import ch.fhnw.wodss.tippspiel.service.TournamentTeamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/tournamentTeams")
+@PreAuthorize("hasRole('USER')")
 public class TournamentTeamController {
 
     private final TournamentTeamService service;
@@ -23,23 +25,27 @@ public class TournamentTeamController {
     }
 
     @GetMapping(produces = "application/json")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<TournamentTeam>> getAllTournamentTeams() {
         return new ResponseEntity<>(service.getAllTournamentTeams(), HttpStatus.OK);
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<TournamentTeam> getTournamentTeamById(@PathVariable Long id) {
         TournamentTeam team = service.getTournamentTeamById(id);
         return new ResponseEntity<>(team, HttpStatus.OK);
     }
 
     @GetMapping(value = "/name/{name}", produces = "application/json")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<TournamentTeam> getTournamentTeamByName(@PathVariable String name) {
         TournamentTeam team = service.getTournamentTeamByName(name);
         return new ResponseEntity<>(team, HttpStatus.OK);
     }
 
     @PostMapping(produces = "application/json")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TournamentTeam> addTournamentTeam(@Valid @RequestBody TournamentTeam tournamentTeam, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -49,6 +55,7 @@ public class TournamentTeamController {
     }
 
     @PutMapping(value = "/{id}", produces = "application/json")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TournamentTeam> updateTournamentTeam(@Valid @RequestBody TournamentTeam tournamentTeam, @PathVariable Long id, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -58,6 +65,7 @@ public class TournamentTeamController {
     }
 
     @DeleteMapping(value = "/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteTournamentTeam(@PathVariable Long id) {
         service.deleteTournamentTeam(id);
         return new ResponseEntity<>(HttpStatus.OK);
