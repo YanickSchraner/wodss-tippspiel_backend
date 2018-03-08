@@ -35,22 +35,22 @@ public class Game {
     @Max(Integer.MAX_VALUE)
     private Integer awayTeamGoals;
 
-    @Column
+    @JoinColumn
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
     private TournamentTeam homeTeam;
 
-    @Column
+    @JoinColumn
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
     private TournamentTeam awayTeam;
 
-    @Column
+    @JoinColumn
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     private Location location;
 
-    @Column
+    @JoinColumn
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     private Phase phase;

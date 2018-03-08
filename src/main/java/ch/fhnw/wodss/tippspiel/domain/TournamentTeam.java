@@ -23,7 +23,7 @@ public class TournamentTeam {
     @Size(min = 1, max = 100)
     private String name;
 
-    @Column
+    @JoinColumn
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
     private TournamentGroup group;

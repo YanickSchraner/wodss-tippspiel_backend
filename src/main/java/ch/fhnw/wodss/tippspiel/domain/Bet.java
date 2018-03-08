@@ -19,6 +19,11 @@ public class Bet {
     @Column
     private Long id;
 
+    @NotNull
+    @JoinColumn
+    @ManyToOne
+    private User user;
+
     @Column
     @Min(0)
     @Max(Integer.MAX_VALUE)
@@ -34,12 +39,13 @@ public class Bet {
     @Max(Integer.MAX_VALUE)
     private Integer score;
 
-    @Column
-    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn
+    @ManyToOne(fetch = FetchType.EAGER)
     private Game game;
 
-    public Bet(Long id, Integer homeTeamGoals, Integer awayTeamGoals, Integer score, Game game) {
+    public Bet(Long id, Integer homeTeamGoals, Integer awayTeamGoals, Integer score, Game game, User user) {
         this.id = id;
+        this.user = user;
         this.homeTeamGoals = homeTeamGoals;
         this.awayTeamGoals = awayTeamGoals;
         this.score = score;

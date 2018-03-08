@@ -54,7 +54,7 @@ public class BetGroupService {
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find given user."));
         BetGroup betGroup = betGroupRepository.findById(betGroupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find bet group with id: " + betGroupId));
-        boolean containsUser = betGroupRepository.existsBetGroupByMembersIsWithin(user.getId());
+        boolean containsUser = betGroupRepository.existsBetGroupsByMembersContaining(user.getId());
         if (!containsUser) {
             List<User> users = betGroup.getMembers();
             users.add(user);

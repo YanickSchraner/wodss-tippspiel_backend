@@ -38,12 +38,13 @@ public class User {
 
     @Column
     @NotNull
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "Bet")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
     List<Bet> bets;
 
     @Column
     @NotNull
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_group", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     List<BetGroup> betGroup;
 
     @Column
