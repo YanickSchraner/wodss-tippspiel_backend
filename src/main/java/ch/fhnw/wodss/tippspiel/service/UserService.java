@@ -7,6 +7,7 @@ import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -41,7 +42,8 @@ public class UserService {
     }
 
     public List<UserRankingDTO> getAllUsersForRanking() {
-        List<User> users = getAllUsers();
+        Sort sort = new Sort(Sort.Direction.ASC, "score");
+        List<User> users = repository.findAll(sort);
         return createAllUsersForRankingDTOList(users);
     }
 
