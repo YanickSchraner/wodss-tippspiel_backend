@@ -1,5 +1,6 @@
 package ch.fhnw.wodss.tippspiel.service;
 
+import ch.fhnw.wodss.tippspiel.domain.Bet;
 import ch.fhnw.wodss.tippspiel.dto.BetGroupDTO;
 import ch.fhnw.wodss.tippspiel.dto.UserAllBetGroupDTO;
 import ch.fhnw.wodss.tippspiel.domain.BetGroup;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,6 +23,30 @@ public class BetGroupService {
     private final BetGroupRepository betGroupRepository;
     private final UserRepository userRepository;
 
+    private List<UserAllBetGroupDTO> createAllUsersInBetGroupDTOList(List<User> users) {
+        List<UserAllBetGroupDTO> dtos = new ArrayList<>();
+        for (User user : users) {
+            UserAllBetGroupDTO dto = new UserAllBetGroupDTO();
+            dto.setId(user.getId());
+            dto.setName(user.getName());
+            dto.setScore(user.getBets().stream().mapToInt(Bet::getScore).sum());
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+
+    private List<BetGroupDTO> createAllBetGroupDTOList(List<BetGroup> betGroups) {
+        List<BetGroupDTO> dtos = new ArrayList<>();
+        for (BetGroup betGroup : betGroups) {
+            BetGroupDTO dto = new BetGroupDTO();
+            dto.setId(betGroup.getId());
+            dto.setName(betGroup.getName());
+            dto.setScore(betGroup.getScore());
+            dto.setMembers(betGroup.getMembers());
+        }
+        return dtos;
+    }
+
     @Autowired
     public BetGroupService(BetGroupRepository betGroupRepository, UserRepository userRepository) {
         this.betGroupRepository = betGroupRepository;
@@ -29,14 +55,12 @@ public class BetGroupService {
 
     public List<UserAllBetGroupDTO> getAllUsersInBetGroup(Long id) {
         List<User> users = betGroupRepository.getUserInBetGroup(id);
-        // Todo Convert to DTO
-        return null;
+        return createAllUsersInBetGroupDTOList(users);
     }
 
     public List<BetGroupDTO> getAllBetGroups() {
         List<BetGroup> betGroups = betGroupRepository.findAll();
-        // ToDo Convert to DTO
-        return null;
+        return createAllBetGroupDTOList(betGroups);
     }
 
     public BetGroup getBetGroupById(Long id) {
