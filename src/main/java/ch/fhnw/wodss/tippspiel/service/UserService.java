@@ -1,5 +1,6 @@
 package ch.fhnw.wodss.tippspiel.service;
 
+import ch.fhnw.wodss.tippspiel.domain.Bet;
 import ch.fhnw.wodss.tippspiel.dto.UserRankingDTO;
 import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +19,17 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository repository;
+
+    private List<UserRankingDTO> createAllUsersForRankingDTOList(List<User> users) {
+        List<UserRankingDTO> dtos = new ArrayList<>();
+        for (User user : users) {
+            UserRankingDTO dto = new UserRankingDTO();
+            dto.setId(user.getId());
+            dto.setName(user.getName());
+            dto.setScore(user.getBets().stream().mapToInt(Bet::getScore).sum());
+        }
+        return dtos;
+    }
 
     @Autowired
     public UserService(UserRepository repository) {
@@ -28,8 +41,8 @@ public class UserService {
     }
 
     public List<UserRankingDTO> getAllUsersForRanking() {
-        // Todo DTO
-        return null;
+        List<User> users = getAllUsers();
+        return createAllUsersForRankingDTOList(users);
     }
 
     public User getUserById(Long id) {
