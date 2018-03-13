@@ -8,12 +8,14 @@ import ch.fhnw.wodss.tippspiel.persistance.BetRepository;
 import ch.fhnw.wodss.tippspiel.persistance.GameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.Calendar;
 
 @Service
-@Transactional
+@Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
 public class BetService {
 
     private final BetRepository betRepository;
@@ -25,11 +27,13 @@ public class BetService {
         this.gameRepository = gameRepository;
     }
 
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public Bet getBetById(Long id) {
         return betRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find Bet with id: " + id));
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public Bet addBet(Bet bet) {
         Game game = gameRepository.findById(bet.getGame().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find Game in Bet with id: "
@@ -43,6 +47,7 @@ public class BetService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public Bet updateBet(Long id, Bet bet) {
         if (!betRepository.existsById(id)) {
             throw new IllegalActionException("No bet was found to change");
@@ -60,6 +65,7 @@ public class BetService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public void deleteBet(Long id) {
         Bet bet = betRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find Bet with id: " + id));
