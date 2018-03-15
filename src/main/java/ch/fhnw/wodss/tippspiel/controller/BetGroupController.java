@@ -18,7 +18,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/betroups")
+@RequestMapping("/betGroups")
 @PreAuthorize("hasRole('USER')")
 public class BetGroupController {
 
