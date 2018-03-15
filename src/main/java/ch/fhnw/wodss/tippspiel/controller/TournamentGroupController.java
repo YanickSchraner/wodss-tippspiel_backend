@@ -3,6 +3,9 @@ package ch.fhnw.wodss.tippspiel.controller;
 import ch.fhnw.wodss.tippspiel.domain.TournamentGroup;
 import ch.fhnw.wodss.tippspiel.service.TournamentGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,6 +33,7 @@ public class TournamentGroupController {
         return new ResponseEntity<>(service.getAllTournamentGroups(), HttpStatus.OK);
     }
 
+    @Cacheable(value = "tournamentGroups", key = "#id", unless = "#result == null")
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<TournamentGroup> getTournamentGroupById(@PathVariable Long id) {
@@ -54,6 +58,7 @@ public class TournamentGroupController {
         return new ResponseEntity<>(newGroup, HttpStatus.CREATED);
     }
 
+    @CachePut(value = "tournamentGroups", key = "#id", unless = "#result == null")
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TournamentGroup> updateTournamentGroup(@Valid @RequestBody TournamentGroup tournamentGroup, @PathVariable Long id, BindingResult result) {
@@ -64,6 +69,7 @@ public class TournamentGroupController {
         return new ResponseEntity<>(newGroup, HttpStatus.OK);
     }
 
+    @CacheEvict(value = "tournamentGroups", key = "#id")
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteTournamentGroup(@PathVariable Long id) {

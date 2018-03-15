@@ -3,6 +3,9 @@ package ch.fhnw.wodss.tippspiel.controller;
 import ch.fhnw.wodss.tippspiel.domain.Game;
 import ch.fhnw.wodss.tippspiel.service.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,6 +33,7 @@ public class GameController {
         return new ResponseEntity<>(service.getAllGames(), HttpStatus.OK);
     }
 
+    @Cacheable(value = "games", key = "#id", unless = "#result == null")
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Game> getGameById(@PathVariable Long id) {
@@ -44,6 +48,7 @@ public class GameController {
         return new ResponseEntity<>(newGame, HttpStatus.CREATED);
     }
 
+    @CachePut(value = "games", key = "#id", unless = "#result == null")
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Game> updateGame(@Valid @RequestBody Game newGame, BindingResult result, @PathVariable Long id) {
@@ -51,6 +56,7 @@ public class GameController {
         return new ResponseEntity<>(game, HttpStatus.OK);
     }
 
+    @CacheEvict(value = "games", key = "#id")
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteGame(@PathVariable Long id) {
