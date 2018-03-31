@@ -144,3 +144,7 @@ fabric.properties
 /gradlew
 /gradlew.bat
 /gradle/
+
+# Custom
+logs/*
+logs

@@ -16,7 +16,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/betroups")
+@RequestMapping("/betgroups")
 @PreAuthorize("hasRole('USER')")
 public class BetGroupController {
 
@@ -65,7 +65,7 @@ public class BetGroupController {
         return new ResponseEntity<>(newBetGroup, HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/addUser/{id}", produces = "application/json", consumes = "application/json")
+    @PutMapping(value = "/{id}/addUser", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BetGroup> addUserToBetGroup(@PathVariable Long id, @Valid @RequestBody User user, BindingResult result) {
         if (result.hasErrors()) {
@@ -76,7 +76,7 @@ public class BetGroupController {
     }
 
     // Todo
-    @PutMapping(value = "/removeUser/{id}", produces = "application/json", consumes = "application/json")
+    @PutMapping(value = "/{id}/removeUser", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BetGroup> removeUserFromBetGroup(@PathVariable Long id, @Valid @RequestBody User user, BindingResult result) {
         return null;

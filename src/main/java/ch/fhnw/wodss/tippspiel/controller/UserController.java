@@ -52,7 +52,6 @@ public class UserController {
     }
 
     @PostMapping(produces = "application/json", consumes = "application/json")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<User> addUser(@Valid @RequestBody User user, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
