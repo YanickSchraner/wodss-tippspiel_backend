@@ -7,18 +7,20 @@ import ch.fhnw.wodss.tippspiel.persistance.BetRepository;
 import ch.fhnw.wodss.tippspiel.persistance.GameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@Transactional
+@Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
 public class GameService {
+
     private final GameRepository gameRepository;
     private final BetRepository betRepository;
-
 
     @Autowired
     public GameService(GameRepository gameRepository, BetRepository betRepository) {
@@ -26,15 +28,18 @@ public class GameService {
         this.betRepository = betRepository;
     }
 
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<Game> getAllGames() {
         return gameRepository.findAll();
     }
 
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public Game getGameById(Long id) {
         return gameRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find a game with id " + id));
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public Game addGame(Game game) {
         if (gameRepository.existsGameByHomeTeamAndAwayTeamAndDateTimeEquals(game.getHomeTeam(), game.getAwayTeam(), game.getDateTime())) {
             throw new IllegalActionException("Can't create an identical game");
@@ -42,6 +47,7 @@ public class GameService {
         return gameRepository.save(game);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public Game updateGame(Long id, Game game) {
         Optional<Game> oldGame = gameRepository.findById(id);
         if (oldGame.isPresent()) {
@@ -51,6 +57,7 @@ public class GameService {
         throw new ResourceNotFoundException("Could not find game with id " + id + " to update.");
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public void deleteGame(Long id) {
         if (betRepository.existsBetsByGame_Id(id)) {
             throw new IllegalActionException("Can't delete a game with active bets");
@@ -62,6 +69,7 @@ public class GameService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public void setResult(Long id, int homeTeamScore, int awayTeamScore) {
         Optional<Game> game = gameRepository.findById(id);
         Calendar cal = Calendar.getInstance();

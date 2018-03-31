@@ -6,6 +6,8 @@ import ch.fhnw.wodss.tippspiel.dto.BetGroupDTO;
 import ch.fhnw.wodss.tippspiel.dto.UserAllBetGroupDTO;
 import ch.fhnw.wodss.tippspiel.service.BetGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,7 +42,7 @@ public class BetGroupController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-
+    @Cacheable(value = "betGroups", key = "#id", unless = "#result == null")
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BetGroup> getBetGroupById(@PathVariable Long id) {
@@ -83,6 +85,7 @@ public class BetGroupController {
     }
 
     // Todo disable this route if we disable this feature
+    @CacheEvict(value = "betGroups", key = "#id")
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteBetGroup(@PathVariable Long id) {
