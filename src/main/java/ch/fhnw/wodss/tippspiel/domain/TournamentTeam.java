@@ -14,7 +14,6 @@ public class TournamentTeam {
 
     @Id
     @GeneratedValue
-    @NotNull
     @Column
     private Long id;
 
@@ -28,8 +27,7 @@ public class TournamentTeam {
     @ManyToOne(fetch = FetchType.EAGER)
     private TournamentGroup group;
 
-    public TournamentTeam(Long id, String name, TournamentGroup group) {
-        this.id = id;
+    public TournamentTeam(String name, TournamentGroup group) {
         this.name = name;
         this.group = group;
     }

@@ -15,7 +15,6 @@ public class Bet {
 
     @Id
     @GeneratedValue
-    @NotNull
     @Column
     private Long id;
 
@@ -43,8 +42,7 @@ public class Bet {
     @ManyToOne(fetch = FetchType.EAGER)
     private Game game;
 
-    public Bet(Long id, Integer homeTeamGoals, Integer awayTeamGoals, Integer score, Game game, User user) {
-        this.id = id;
+    public Bet(Integer homeTeamGoals, Integer awayTeamGoals, Integer score, Game game, User user) {
         this.user = user;
         this.homeTeamGoals = homeTeamGoals;
         this.awayTeamGoals = awayTeamGoals;

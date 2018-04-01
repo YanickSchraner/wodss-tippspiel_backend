@@ -1,6 +1,7 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
 import ch.fhnw.wodss.tippspiel.domain.Bet;
+import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.service.BetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -9,6 +10,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,14 +31,13 @@ public class BetController {
     @Cacheable(value = "bets", key = "#id", unless = "#result == null")
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Bet> getBetById(@PathVariable Long id) {
-        Bet bet = service.getBetById(id);
+    public ResponseEntity<Bet> getBetById(@AuthenticationPrincipal User user, @PathVariable Long id) {
         return new ResponseEntity<>(service.getBetById(id), HttpStatus.OK);
     }
 
     @PostMapping(produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Bet> addBet(@Valid @RequestBody Bet bet, BindingResult result) {
+    public ResponseEntity<Bet> addBet(@AuthenticationPrincipal User user, @Valid @RequestBody Bet bet, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -47,7 +48,7 @@ public class BetController {
     @CachePut(value = "bets", key = "#id", unless = "#result == null")
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Bet> updateBet(@Valid @RequestBody Bet bet, @PathVariable Long id, BindingResult result) {
+    public ResponseEntity<Bet> updateBet(@AuthenticationPrincipal User user, @Valid @RequestBody Bet bet, @PathVariable Long id, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -58,7 +59,7 @@ public class BetController {
     @CacheEvict(value = "bets", key = "#id")
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> deleteBet(@PathVariable Long id) {
+    public ResponseEntity<String> deleteBet(@AuthenticationPrincipal User user, @PathVariable Long id) {
         service.deleteBet(id);
         return new ResponseEntity<>("Bet deleted", HttpStatus.OK);
     }

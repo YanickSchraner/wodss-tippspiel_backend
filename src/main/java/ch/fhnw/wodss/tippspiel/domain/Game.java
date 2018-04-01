@@ -16,7 +16,6 @@ public class Game {
 
     @Id
     @GeneratedValue
-    @NotNull
     @Column
     private Long id;
 
@@ -55,8 +54,7 @@ public class Game {
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     private Phase phase;
 
-    public Game(Long id, Date dateTime, Integer homeTeamGoals, Integer awayTeamGoals, TournamentTeam homeTeam, TournamentTeam awayTeam, Location location, Phase phase) {
-        this.id = id;
+    public Game(Date dateTime, Integer homeTeamGoals, Integer awayTeamGoals, TournamentTeam homeTeam, TournamentTeam awayTeam, Location location, Phase phase) {
         this.dateTime = dateTime;
         this.homeTeamGoals = homeTeamGoals;
         this.awayTeamGoals = awayTeamGoals;

@@ -17,7 +17,6 @@ public class User {
 
     @Id
     @GeneratedValue
-    @NotNull
     @Column
     private Long id;
 
@@ -57,8 +56,7 @@ public class User {
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
-    public User(Long id, String name, String password,  String email, List<Bet> bets, List<BetGroup> betGroup, boolean reminders, boolean dailyResults, Set<Role> roles) {
-        this.id = id;
+    public User(String name, String password,  String email, List<Bet> bets, List<BetGroup> betGroup, boolean reminders, boolean dailyResults, Set<Role> roles) {
         this.name = name;
         this.password = password;
         this.email = email;

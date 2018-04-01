@@ -17,7 +17,6 @@ public class Phase {
 
     @Id
     @GeneratedValue
-    @NotNull
     @Column
     private Long id;
 
@@ -26,8 +25,7 @@ public class Phase {
     @Size(min = 1, max = 100)
     private String name;
 
-    public Phase(Long id, String name) {
-        this.id = id;
+    public Phase(String name) {
         this.name = name;
     }
 }

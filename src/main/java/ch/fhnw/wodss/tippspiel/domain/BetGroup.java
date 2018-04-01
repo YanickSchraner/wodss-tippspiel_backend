@@ -17,7 +17,6 @@ public class BetGroup {
 
     @Id
     @GeneratedValue
-    @NotNull
     @Column
     private Long id;
 
@@ -40,8 +39,7 @@ public class BetGroup {
     @ManyToMany(fetch = FetchType.EAGER)
     private List<User> members;
 
-    public BetGroup(Long id, String name, String password, Integer score, List<User> members){
-        this.id = id;
+    public BetGroup(String name, String password, Integer score, List<User> members){
         this.name = name;
         this.password = password;
         this.score = score;

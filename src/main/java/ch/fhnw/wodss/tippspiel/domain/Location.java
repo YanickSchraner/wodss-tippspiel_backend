@@ -17,7 +17,6 @@ public class Location {
 
     @Id
     @GeneratedValue
-    @NotNull
     @Column
     private Long id;
 
@@ -26,8 +25,7 @@ public class Location {
     @Size(min = 1, max = 100)
     private String name;
 
-    public Location(Long id, String name) {
-        this.id = id;
+    public Location(String name) {
         this.name = name;
     }
 }

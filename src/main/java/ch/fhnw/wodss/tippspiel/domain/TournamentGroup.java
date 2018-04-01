@@ -14,7 +14,6 @@ public class TournamentGroup {
 
     @Id
     @GeneratedValue
-    @NotNull
     @Column
     private Long id;
 
@@ -23,8 +22,7 @@ public class TournamentGroup {
     @Size(min = 1, max = 100)
     private String name;
 
-    public TournamentGroup(Long id, String name) {
-        this.id = id;
+    public TournamentGroup(String name) {
         this.name = name;
     }
 }
