@@ -33,7 +33,7 @@ public class TournamentTeamController {
         return new ResponseEntity<>(service.getAllTournamentTeams(), HttpStatus.OK);
     }
 
-    @Cacheable(value = "tournamentTeams", key = "#id", unless = "#result == null")
+    @Cacheable(value = "tournamentTeams", key = "#id", unless = "#result.statusCode != 200")
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<TournamentTeam> getTournamentTeamById(@PathVariable Long id) {
@@ -48,6 +48,7 @@ public class TournamentTeamController {
         return new ResponseEntity<>(team, HttpStatus.OK);
     }
 
+    @CachePut(value = "tournamentTeams", key ="#tournamentTeam.id", unless = "#result.statusCode != 201")
     @PostMapping(produces = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TournamentTeam> addTournamentTeam(@Valid @RequestBody TournamentTeam tournamentTeam, BindingResult result) {
@@ -58,7 +59,7 @@ public class TournamentTeamController {
         return new ResponseEntity<>(newTeam, HttpStatus.CREATED);
     }
 
-    @CachePut(value = "tournamentTeams", key = "#id", unless = "#result == null")
+    @CachePut(value = "tournamentTeams", key = "#id", unless = "#result.statusCode != 200")
     @PutMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TournamentTeam> updateTournamentTeam(@Valid @RequestBody TournamentTeam tournamentTeam, @PathVariable Long id, BindingResult result) {

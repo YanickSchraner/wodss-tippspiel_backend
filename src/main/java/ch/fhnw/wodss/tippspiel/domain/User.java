@@ -66,4 +66,8 @@ public class User {
         this.dailyResults = dailyResults;
         this.roles = roles;
     }
+
+    public boolean hasBet(long id){
+        return true;
+    }
 }

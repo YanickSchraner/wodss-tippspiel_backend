@@ -33,7 +33,7 @@ public class GameController {
         return new ResponseEntity<>(service.getAllGames(), HttpStatus.OK);
     }
 
-    @Cacheable(value = "games", key = "#id", unless = "#result == null")
+    @Cacheable(value = "games", key = "#id", unless = "#result.statusCode != 200")
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Game> getGameById(@PathVariable Long id) {
@@ -41,6 +41,7 @@ public class GameController {
         return new ResponseEntity<>(game, HttpStatus.OK);
     }
 
+    @CachePut(value = "games", key = "#game.id", unless = "#result.statusCode != 201")
     @PostMapping(produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Game> addGame(@Valid @RequestBody Game game, BindingResult result) {
@@ -48,7 +49,7 @@ public class GameController {
         return new ResponseEntity<>(newGame, HttpStatus.CREATED);
     }
 
-    @CachePut(value = "games", key = "#id", unless = "#result == null")
+    @CachePut(value = "games", key = "#id", unless = "#result.statusCode != 200")
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Game> updateGame(@Valid @RequestBody Game newGame, BindingResult result, @PathVariable Long id) {

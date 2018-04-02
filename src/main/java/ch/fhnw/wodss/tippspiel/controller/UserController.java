@@ -40,7 +40,7 @@ public class UserController {
         return new ResponseEntity<>(service.getAllUsersForRanking(), HttpStatus.OK);
     }
 
-    @Cacheable(value = "users", key = "#id", unless = "#result == null")
+    @Cacheable(value = "users", key = "#id", unless = "#result.statusCode != 200")
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
@@ -55,6 +55,7 @@ public class UserController {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
+    @CachePut(value = "users", key = "#user.id", unless = "result.statusCode != 201")
     @PostMapping(produces = "application/json", consumes = "application/json")
     public ResponseEntity<User> addUser(@Valid @RequestBody User user, BindingResult result) {
         if (result.hasErrors()) {
@@ -64,7 +65,7 @@ public class UserController {
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
-    @CachePut(value = "users", key = "#id", unless = "#result == null")
+    @CachePut(value = "users", key = "#id", unless = "#result.statusCode != 200")
     @PutMapping(value = "/{id}/email", consumes = "application/json", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<User> updateUserEmail(@Valid @RequestBody User user, @PathVariable Long id, BindingResult result) {

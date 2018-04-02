@@ -7,7 +7,9 @@ import ch.fhnw.wodss.tippspiel.dto.UserAllBetGroupDTO;
 import ch.fhnw.wodss.tippspiel.service.BetGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,7 +44,7 @@ public class BetGroupController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @Cacheable(value = "betGroups", key = "#id", unless = "#result == null")
+    @Cacheable(value = "betGroups", key = "#id", unless = "#result.statusCode != 200")
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BetGroup> getBetGroupById(@PathVariable Long id) {
@@ -50,6 +52,7 @@ public class BetGroupController {
         return new ResponseEntity<>(betGroup, HttpStatus.OK);
     }
 
+    @Cacheable(value = "betGroupsName", key = "#name", unless = "#result.statusCode != 200")
     @GetMapping(value = "/name/{name}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BetGroup> getBetGroupByName(@PathVariable String name) {
@@ -57,6 +60,10 @@ public class BetGroupController {
         return new ResponseEntity<>(betGroup, HttpStatus.OK);
     }
 
+    @Caching(put = {
+            @CachePut(value = "betGroups", key = "#betGroup.id", unless = "#result.statusCode != 201"),
+            @CachePut(value = "betGroupsName", key = "#betGroup.name", unless = "#result.statusCode != 201")
+    })
     @PostMapping(produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BetGroup> addBetGroup(@Valid @RequestBody BetGroup betGroup, BindingResult result) {
@@ -67,6 +74,10 @@ public class BetGroupController {
         return new ResponseEntity<>(newBetGroup, HttpStatus.CREATED);
     }
 
+    @Caching(put = {
+            @CachePut(value = "betGroups", key = "#id", unless = "#result.statusCode != 201"),
+            @CachePut(value = "betGroupsName", key = "#result.body.name", unless = "#result.statusCode != 201")
+    })
     @PutMapping(value = "/{id}/addUser", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BetGroup> addUserToBetGroup(@PathVariable Long id, @Valid @RequestBody User user, BindingResult result) {
@@ -74,24 +85,17 @@ public class BetGroupController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         BetGroup betGroup = service.addUser(id, user);
-        return new ResponseEntity<>(betGroup, HttpStatus.OK);
+        return new ResponseEntity<>(betGroup, HttpStatus.CREATED);
     }
 
     // Todo
+    @Caching(evict = {
+            @CacheEvict(value = "betGroups", key = "#id"),
+            @CacheEvict(value = "betGroupsName", key = "#result.body.name")
+    })
     @PutMapping(value = "/{id}/removeUser", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BetGroup> removeUserFromBetGroup(@PathVariable Long id, @Valid @RequestBody User user, BindingResult result) {
         return null;
     }
-
-    // Todo disable this route if we disable this feature
-    @CacheEvict(value = "betGroups", key = "#id")
-    @DeleteMapping(value = "/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> deleteBetGroup(@PathVariable Long id) {
-        service.deleteBetGroup(id);
-        return new ResponseEntity<>("Bet Group deleted", HttpStatus.OK);
-    }
-
-
 }
