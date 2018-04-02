@@ -7,12 +7,37 @@ import ch.fhnw.wodss.tippspiel.domain.User;
 public class BetBuilder {
     private Bet bet;
 
-    public BetBuilder(int homeTeamGoals, int awayTeamGoals, int score, Game game, User user) {
-        bet = new Bet(homeTeamGoals, awayTeamGoals, score, game, user);
+    public BetBuilder() {
+        this.bet = new Bet();
     }
 
     public BetBuilder id(Long id) {
         bet.setId(id);
+        return this;
+    }
+
+    public BetBuilder homeTeamGoals(int homeTeamGoals) {
+        bet.setHomeTeamGoals(homeTeamGoals);
+        return this;
+    }
+
+    public BetBuilder awayTeamGoals(int awayTeamGoals) {
+        bet.setAwayTeamGoals(awayTeamGoals);
+        return this;
+    }
+
+    public BetBuilder score(int score) {
+        bet.setScore(score);
+        return this;
+    }
+
+    public BetBuilder game(Game game) {
+        bet.setGame(game);
+        return this;
+    }
+
+    public BetBuilder user(User user) {
+        bet.setUser(user);
         return this;
     }
 
