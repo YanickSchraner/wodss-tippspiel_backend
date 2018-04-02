@@ -32,6 +32,7 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
     compile('org.springframework.boot:spring-boot-starter-security')
     compile('org.springframework.boot:spring-boot-starter-web')
+    compile('org.springframework.boot:spring-boot-starter-cache')
     runtime('org.springframework.boot:spring-boot-devtools')
     compileOnly('org.projectlombok:lombok')
     compile group: 'org.springframework', name: 'spring-aspects', version: '5.0.4.RELEASE'
@@ -39,5 +40,5 @@ dependencies {
     testCompile('org.springframework.security:spring-security-test')
     compile group: 'de.mkammerer', name: 'argon2-jvm', version: '2.1'
     compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.6'
-
+    compile group: 'org.ehcache', name: 'ehcache', version: '3.5.2'
 }

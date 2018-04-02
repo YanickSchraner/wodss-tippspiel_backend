@@ -1,0 +1,56 @@
+
+<config xmlns='http://www.ehcache.org/v3'
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:jsr107="http://www.ehcache.org/v3/jsr107"
+        xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.0.xsd
+							http://www.ehcache.org/v3/jsr107 http://www.ehcache.org/schema/ehcache-107-ext-3.0.xsd">
+    <cache alias="betGroups">
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <heap unit="entries">200</heap>
+        <jsr107:mbeans enable-statistics="true"/>
+    </cache>
+    <cache alias="betGroupsName">
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <heap unit="entries">200</heap>
+        <jsr107:mbeans enable-statistics="true"/>
+    </cache>
+    <cache alias="games">
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <heap unit="entries">200</heap>
+        <jsr107:mbeans enable-statistics="true"/>
+    </cache>
+    <cache alias="tournamentGroupsName">
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <heap unit="entries">200</heap>
+        <jsr107:mbeans enable-statistics="true"/>
+    </cache>
+    <cache alias="tournamentGroups">
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <heap unit="entries">200</heap>
+        <jsr107:mbeans enable-statistics="true"/>
+    </cache>
+    <cache alias="tournamentTeams">
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <heap unit="entries">200</heap>
+        <jsr107:mbeans enable-statistics="true"/>
+    </cache>
+    <cache alias="users">
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <heap unit="entries">200</heap>
+        <jsr107:mbeans enable-statistics="true"/>
+    </cache>
+</config>
