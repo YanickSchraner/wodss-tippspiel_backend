@@ -11,32 +11,32 @@ public class BetBuilder {
         this.bet = new Bet();
     }
 
-    public BetBuilder id(Long id) {
+    public BetBuilder withId(Long id) {
         bet.setId(id);
         return this;
     }
 
-    public BetBuilder homeTeamGoals(int homeTeamGoals) {
+    public BetBuilder withHomeTeamGoals(int homeTeamGoals) {
         bet.setHomeTeamGoals(homeTeamGoals);
         return this;
     }
 
-    public BetBuilder awayTeamGoals(int awayTeamGoals) {
+    public BetBuilder withAwayTeamGoals(int awayTeamGoals) {
         bet.setAwayTeamGoals(awayTeamGoals);
         return this;
     }
 
-    public BetBuilder score(int score) {
+    public BetBuilder withScore(int score) {
         bet.setScore(score);
         return this;
     }
 
-    public BetBuilder game(Game game) {
+    public BetBuilder withGame(Game game) {
         bet.setGame(game);
         return this;
     }
 
-    public BetBuilder user(User user) {
+    public BetBuilder withUser(User user) {
         bet.setUser(user);
         return this;
     }

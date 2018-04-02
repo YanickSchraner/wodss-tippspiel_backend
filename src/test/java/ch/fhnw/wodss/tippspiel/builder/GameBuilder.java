@@ -14,42 +14,42 @@ public class GameBuilder {
         game = new Game();
     }
 
-    public GameBuilder id(Long id) {
+    public GameBuilder withId(Long id) {
         game.setId(id);
         return this;
     }
 
-    public GameBuilder dateTime(Date date) {
+    public GameBuilder withDateTime(Date date) {
         game.setDateTime(date);
         return this;
     }
 
-    public GameBuilder homeTeamGoals(int homeTeamGoals) {
+    public GameBuilder withHomeTeamGoals(int homeTeamGoals) {
         game.setHomeTeamGoals(homeTeamGoals);
         return this;
     }
 
-    public GameBuilder awayTeamGoals(int awayTeamGoals) {
+    public GameBuilder withAwayTeamGoals(int awayTeamGoals) {
         game.setAwayTeamGoals(awayTeamGoals);
         return this;
     }
 
-    public GameBuilder homeTeam(TournamentTeam homeTeam) {
+    public GameBuilder withHomeTeam(TournamentTeam homeTeam) {
         game.setHomeTeam(homeTeam);
         return this;
     }
 
-    public GameBuilder awayTeam(TournamentTeam awayTeam) {
+    public GameBuilder withAwayTeam(TournamentTeam awayTeam) {
         game.setAwayTeam(awayTeam);
         return this;
     }
 
-    public GameBuilder location(Location location) {
+    public GameBuilder withLocation(Location location) {
         game.setLocation(location);
         return this;
     }
 
-    public GameBuilder phase(Phase phase) {
+    public GameBuilder withPhase(Phase phase) {
         game.setPhase(phase);
         return this;
     }
