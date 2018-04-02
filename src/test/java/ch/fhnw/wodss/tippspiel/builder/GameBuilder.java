@@ -44,12 +44,16 @@ public class GameBuilder {
         return this;
     }
 
-    public GameBuilder withLocation(Location location) {
+    public GameBuilder withLocation(String  name) {
+        Location location = new Location();
+        location.setName(name);
         game.setLocation(location);
         return this;
     }
 
-    public GameBuilder withPhase(Phase phase) {
+    public GameBuilder withPhase(String name) {
+        Phase phase = new Phase();
+        phase.setName(name);
         game.setPhase(phase);
         return this;
     }
