@@ -5,7 +5,7 @@ import ch.fhnw.wodss.tippspiel.domain.Location;
 import ch.fhnw.wodss.tippspiel.domain.Phase;
 import ch.fhnw.wodss.tippspiel.domain.TournamentTeam;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public class GameBuilder {
     private Game game;
@@ -19,7 +19,7 @@ public class GameBuilder {
         return this;
     }
 
-    public GameBuilder withDateTime(Date date) {
+    public GameBuilder withDateTime(LocalDateTime date) {
         game.setDateTime(date);
         return this;
     }

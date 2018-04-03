@@ -29,6 +29,8 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.ArrayList;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -88,7 +90,7 @@ public class BetControllerTest {
                 .withGame(game)
                 .withUser(user)
                 .build();
-        when(betServiceMock.getBetById(1L)).thenReturn(bet);
+        when(betServiceMock.getBetById(eq(1L), any())).thenReturn(bet);
 
         mockMvc.perform(get("/bets/{id}", 1L)
                 .headers(buildCORSHeaders())
@@ -104,19 +106,18 @@ public class BetControllerTest {
                 .andExpect(jsonPath("$.game.homeTeamGoals", equalTo(1)))
                 .andExpect(jsonPath("$.user.id", equalTo(1)))
                 .andExpect(jsonPath("$.user.name", equalTo("Yanick")));
-        Mockito.verify(betServiceMock, times(1)).getBetById(1L);
+        Mockito.verify(betServiceMock, times(1)).getBetById(eq(1L), any());
     }
 
     @Test
     @WithMockUser(roles = "USER")
     public void findById_BetNotExisting_ShouldReturnNotFound() throws Exception {
-        when(betServiceMock.getBetById(2L)).thenThrow(new ResourceNotFoundException("Could not find Bet"));
+        when(betServiceMock.getBetById(eq(2L), any())).thenThrow(new ResourceNotFoundException("Could not find Bet"));
         mockMvc.perform(get("/bets/{id}", 2L)
                 .headers(buildCORSHeaders())
-                .header("Accept", "application/json")
-        )
+                .header("Accept", "application/json"))
                 .andExpect(status().isNotFound());
-        Mockito.verify(betServiceMock, times(0)).getBetById(1L);
+        Mockito.verify(betServiceMock, times(1)).getBetById(eq(2L), any());
     }
 
     @Test
@@ -137,7 +138,7 @@ public class BetControllerTest {
                 .withGame(new Game())
                 .withUser(new User())
                 .build();
-        when(betServiceMock.addBet(bet)).thenReturn(bet);
+        when(betServiceMock.addBet(eq(bet), any())).thenReturn(bet);
         mockMvc.perform(post("/bets")
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
@@ -148,7 +149,7 @@ public class BetControllerTest {
                 .andExpect(jsonPath("$.homeTeamGoals", equalTo(0)))
                 .andExpect(jsonPath("$.awayTeamGoals", equalTo(1)))
                 .andExpect(jsonPath("$.score", equalTo(10)));
-        Mockito.verify(betServiceMock, times(1)).addBet(bet);
+        Mockito.verify(betServiceMock, times(1)).addBet(eq(bet) ,any());
     }
 
     @Test
@@ -159,14 +160,14 @@ public class BetControllerTest {
                 .withGame(new Game())
                 .withUser(new User())
                 .build();
-        when(betServiceMock.addBet(bet)).thenReturn(bet);
+        when(betServiceMock.addBet(eq(bet), any())).thenReturn(bet);
         mockMvc.perform(post("/bets")
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(bet)))
                 .andExpect(status().isBadRequest());
-        Mockito.verify(betServiceMock, times(0)).addBet(bet);
+        Mockito.verify(betServiceMock, times(0)).addBet(eq(bet), any());
     }
 
     @Test
@@ -180,18 +181,18 @@ public class BetControllerTest {
                 .withGame(new Game())
                 .withUser(new User())
                 .build();
-        when(betServiceMock.addBet(bet)).thenReturn(bet);
+        when(betServiceMock.addBet(eq(bet), any())).thenReturn(bet);
         mockMvc.perform(post("/bets")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
                 .content(TestUtil.convertObjectToJsonBytes(bet))
                 .headers(buildCORSHeaders()))
                 .andExpect(status().isForbidden());
-        Mockito.verify(betServiceMock, times(0)).addBet(bet);
+        Mockito.verify(betServiceMock, times(0)).addBet(eq(bet), any());
     }
 
     @Test
-    @WithMockUser(roles ="USER")
-    public void update_BetUpdated_ShouldReturnOk() throws Exception{
+    @WithMockUser(roles = "USER")
+    public void update_BetUpdated_ShouldReturnOk() throws Exception {
         User user = new UserBuilder()
                 .withId(1L)
                 .withName("Yanick")
@@ -209,7 +210,7 @@ public class BetControllerTest {
                 .withGame(game)
                 .withUser(user)
                 .build();
-        when(betServiceMock.updateBet(1L, bet)).thenReturn(bet);
+        when(betServiceMock.updateBet(eq(1L), eq(bet), any())).thenReturn(bet);
         mockMvc.perform(put("/bets/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
@@ -225,40 +226,29 @@ public class BetControllerTest {
                 .andExpect(jsonPath("$.game.homeTeamGoals", equalTo(1)))
                 .andExpect(jsonPath("$.user.id", equalTo(1)))
                 .andExpect(jsonPath("$.user.name", equalTo("Yanick")));
-        Mockito.verify(betServiceMock, times(1)).updateBet(1L, bet);
+        Mockito.verify(betServiceMock, times(1)).updateBet(eq(1L), eq(bet), any());
     }
 
     @Test
-    @WithMockUser(roles ="USER")
-    public void update_InvalidBetFormat_ShouldReturnBadRequest() throws Exception{
-        User user = new UserBuilder()
-                .withId(1L)
-                .withName("Yanick")
-                .build();
-        Game game = new GameBuilder()
-                .withId(1L)
-                .withAwayTeamGoals(0)
-                .withHomeTeamGoals(1)
-                .build();
+    @WithMockUser(roles = "USER")
+    public void update_InvalidBetFormat_ShouldReturnBadRequest() throws Exception {
         Bet bet = new BetBuilder() // invalid because no result in the bet object
                 .withId(1L)
                 .withScore(10)
-                .withGame(game)
-                .withUser(user)
                 .build();
-        when(betServiceMock.updateBet(1L, bet)).thenReturn(bet);
+        when(betServiceMock.updateBet(eq(1L), eq(bet), any())).thenReturn(bet);
         mockMvc.perform(put("/bets/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(bet)))
                 .andExpect(status().isBadRequest());
-        Mockito.verify(betServiceMock, times(0)).updateBet(1L, bet);
+        Mockito.verify(betServiceMock, times(0)).updateBet(eq(1L), eq(bet), any());
     }
 
     @Test
-    @WithMockUser(roles ="USER")
-    public void update_BetNotFound_ShouldReturnNotFound() throws Exception{
+    @WithMockUser(roles = "USER")
+    public void update_BetNotFound_ShouldReturnNotFound() throws Exception {
         User user = new UserBuilder()
                 .withId(1L)
                 .withName("Yanick")
@@ -276,19 +266,19 @@ public class BetControllerTest {
                 .withGame(game)
                 .withUser(user)
                 .build();
-        when(betServiceMock.updateBet(1L, bet)).thenThrow(new ResourceNotFoundException("Bet not found"));
+        when(betServiceMock.updateBet(eq(1L), eq(bet), any())).thenThrow(new ResourceNotFoundException("Bet not found"));
         mockMvc.perform(put("/bets/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(bet)))
                 .andExpect(status().isNotFound());
-        Mockito.verify(betServiceMock, times(1)).updateBet(1L, bet);
+        Mockito.verify(betServiceMock, times(1)).updateBet(eq(1L), eq(bet), any());
     }
 
     @Test
-    @WithMockUser(username = "testUser", roles ={"UNVERIFIED"})
-    public void update_asRoleUnverified_accessDenied() throws Exception{
+    @WithMockUser(username = "testUser", roles = {"UNVERIFIED"})
+    public void update_asRoleUnverified_accessDenied() throws Exception {
         User user = new UserBuilder()
                 .withId(1L)
                 .withName("Yanick")
@@ -306,47 +296,46 @@ public class BetControllerTest {
                 .withGame(game)
                 .withUser(user)
                 .build();
-        when(betServiceMock.updateBet(1L, bet)).thenReturn(bet);
+        when(betServiceMock.updateBet(eq(1L), eq(bet), any())).thenReturn(bet);
         mockMvc.perform(put("/bets/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(bet)))
                 .andExpect(status().isForbidden());
-        Mockito.verify(betServiceMock, times(0)).updateBet(1L, bet);
+        Mockito.verify(betServiceMock, times(0)).updateBet(eq(1L), eq(bet), any());
     }
 
     @Test
-    @WithMockUser(roles ="USER")
-    public void delete_BetDeleted_ShouldReturnOk() throws Exception{
+    @WithMockUser(roles = "USER")
+    public void delete_BetDeleted_ShouldReturnOk() throws Exception {
         mockMvc.perform(delete("/bets/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json"))
                 .andExpect(status().isOk());
-        Mockito.verify(betServiceMock, times(1)).deleteBet(1L);
+        Mockito.verify(betServiceMock, times(1)).deleteBet(eq(1L), any());
     }
 
     @Test
-    @WithMockUser(roles ="USER")
-    public void delete_BetNotFound_ShouldReturnNotFound() throws Exception{
-        Mockito.doThrow(new ResourceNotFoundException("Could not find Bet")).when(betServiceMock).deleteBet(1L);
+    @WithMockUser(roles = "USER")
+    public void delete_BetNotFound_ShouldReturnNotFound() throws Exception {
+        Mockito.doThrow(new ResourceNotFoundException("Could not find Bet")).when(betServiceMock).deleteBet(eq(1L), any());
         mockMvc.perform(delete("/bets/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json"))
                 .andExpect(status().isNotFound());
-        Mockito.verify(betServiceMock, times(1)).deleteBet(1L);
+        Mockito.verify(betServiceMock, times(1)).deleteBet(eq(1L), any());
     }
 
     @Test
-    @WithMockUser(username = "testUser", roles ={"UNVERIFIED"})
-    public void delete_asRoleUnverified_accessDenied() throws Exception{
+    @WithMockUser(username = "testUser", roles = {"UNVERIFIED"})
+    public void delete_asRoleUnverified_accessDenied() throws Exception {
         mockMvc.perform(delete("/bets/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json"))
                 .andExpect(status().isForbidden());
-        Mockito.verify(betServiceMock, times(0)).deleteBet(1L);
+        Mockito.verify(betServiceMock, times(0)).deleteBet(eq(1L), any());
     }
-
 
 
     private HttpHeaders buildCORSHeaders() {
