@@ -28,7 +28,7 @@ public class BetController {
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Bet> getBetById(@AuthenticationPrincipal User user, @PathVariable Long id) {
-        return new ResponseEntity<>(service.getBetById(id), HttpStatus.OK);
+        return new ResponseEntity<>(service.getBetById(id, user), HttpStatus.OK);
     }
 
     @PostMapping(produces = "application/json", consumes = "application/json")
@@ -37,7 +37,7 @@ public class BetController {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        Bet newBet = service.addBet(bet);
+        Bet newBet = service.addBet(bet, user);
         return new ResponseEntity<>(newBet, HttpStatus.CREATED);
     }
 
@@ -47,14 +47,14 @@ public class BetController {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        Bet newBet = service.updateBet(id, bet);
+        Bet newBet = service.updateBet(id, bet, user);
         return new ResponseEntity<>(newBet, HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> deleteBet(@AuthenticationPrincipal User user, @PathVariable Long id) {
-        service.deleteBet(id);
+        service.deleteBet(id, user);
         return new ResponseEntity<>("Bet deleted", HttpStatus.OK);
     }
 }

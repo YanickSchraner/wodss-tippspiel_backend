@@ -7,7 +7,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -22,7 +22,7 @@ public class Game {
     @Column
     @NotNull
     @Max(Integer.MAX_VALUE)
-    private Date dateTime;
+    private LocalDateTime dateTime;
 
     @Column
     @Min(0)
@@ -54,7 +54,7 @@ public class Game {
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     private Phase phase;
 
-    public Game(Date dateTime, Integer homeTeamGoals, Integer awayTeamGoals, TournamentTeam homeTeam, TournamentTeam awayTeam, Location location, Phase phase) {
+    public Game(LocalDateTime dateTime, Integer homeTeamGoals, Integer awayTeamGoals, TournamentTeam homeTeam, TournamentTeam awayTeam, Location location, Phase phase) {
         this.dateTime = dateTime;
         this.homeTeamGoals = homeTeamGoals;
         this.awayTeamGoals = awayTeamGoals;

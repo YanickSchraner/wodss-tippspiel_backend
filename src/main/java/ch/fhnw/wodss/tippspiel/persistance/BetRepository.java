@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface BetRepository extends JpaRepository<Bet, Long> {
 
     boolean existsBetsByGame_Id(Long gameId);
+
+    boolean existsBetByUser_IdAndGame_Id(Long userId, Long gameId);
 }

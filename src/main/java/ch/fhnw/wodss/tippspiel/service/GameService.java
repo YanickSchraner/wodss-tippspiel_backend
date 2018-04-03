@@ -11,7 +11,8 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Calendar;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -72,9 +73,9 @@ public class GameService {
     @Transactional(propagation = Propagation.REQUIRED)
     public void setResult(Long id, int homeTeamScore, int awayTeamScore) {
         Optional<Game> game = gameRepository.findById(id);
-        Calendar cal = Calendar.getInstance();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Paris"));
         if (game.isPresent()) {
-            if (game.get().getDateTime().before(cal.getTime())) {
+            if (game.get().getDateTime().isAfter(now)) {
                 throw new IllegalActionException("Can't set Score for a game which hasn't been played jet.");
             }
             game.get().setHomeTeamGoals(homeTeamScore);
