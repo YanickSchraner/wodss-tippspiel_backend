@@ -26,11 +26,13 @@ public class Bet {
     @Column
     @Min(0)
     @Max(Integer.MAX_VALUE)
+    @NotNull
     private Integer homeTeamGoals;
 
     @Column
     @Min(0)
     @Max(Integer.MAX_VALUE)
+    @NotNull
     private Integer awayTeamGoals;
 
     @Column
