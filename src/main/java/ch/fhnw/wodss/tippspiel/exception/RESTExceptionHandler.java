@@ -31,4 +31,24 @@ public class RESTExceptionHandler {
         logger.warn("Request tried to perform an illegal action: " + ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
     }
+
+    @ExceptionHandler(ResourceNotAllowedException.class)
+    public ResponseEntity<ExceptionResponse> notAllowed(ResourceNotAllowedException ex) {
+        ExceptionResponse response = new ExceptionResponse();
+        response.setErrorCode("Not Allowed");
+        response.setErrorMessage(ex.getMessage());
+
+        logger.warn("User tried to access a resource which doesn't belong to himself: " + ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<ExceptionResponse> alreadyExists(ResourceAlreadyExistsException ex) {
+        ExceptionResponse response = new ExceptionResponse();
+        response.setErrorCode("Duplicate");
+        response.setErrorMessage(ex.getMessage());
+
+        logger.warn("User tried to persist a duplicate: " + ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
 }
