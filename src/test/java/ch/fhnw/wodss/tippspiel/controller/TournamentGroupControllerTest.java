@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -66,6 +67,7 @@ public class TournamentGroupControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     public void findAll_AllTournamentGroupFound_ShouldReturnFound() throws Exception {
         ArrayList<TournamentGroup> tournamentGroups = new ArrayList<>();
         tournamentGroups.add(new TournamentGroupBuilder().withName("GroupA").withId(1L).build());
@@ -79,6 +81,7 @@ public class TournamentGroupControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     public void findById_TournamentGroupFound_ShouldReturnFound() throws Exception {
         TournamentGroup tournamentGroup = new TournamentGroupBuilder()
                 .withId(1L)
@@ -89,6 +92,7 @@ public class TournamentGroupControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     public void findById_TournamentGroupNotExisting_ShouldReturnNotFound() throws Exception {
         TournamentGroup tournamentGroup = new TournamentGroupBuilder()
                 .withId(3L)
@@ -105,6 +109,7 @@ public class TournamentGroupControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     public void findByName_TournamentGroupFound_ShouldReturnFound() throws Exception {
         TournamentGroup tournamentGroup = new TournamentGroupBuilder()
                 .withId(1L)
@@ -115,6 +120,7 @@ public class TournamentGroupControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     public void findByName_TournamentGroupNotExisting_ShouldReturnFound() throws Exception {
         TournamentGroup tournamentGroup = new TournamentGroupBuilder()
                 .withId(3L)
@@ -125,6 +131,7 @@ public class TournamentGroupControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void create_TournamentGroupCreated_ShouldReturnCreated() throws Exception {
         TournamentGroup tournamentGroup = new TournamentGroupBuilder()
                 .withId(4L)
@@ -143,6 +150,7 @@ public class TournamentGroupControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void create_InvalidTournamentGroupFormat_ShouldReturnBadRequest() throws Exception {
         TournamentGroup tournamentGroup = new TournamentGroupBuilder()
                 .withId(1L)
@@ -158,6 +166,7 @@ public class TournamentGroupControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void update_TournamentGroupUpdated_ShouldReturnOk() throws Exception {
         TournamentGroup tournamentGroup = new TournamentGroupBuilder()
                 .withId(1L)
@@ -177,6 +186,7 @@ public class TournamentGroupControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void delete_TournamentGroupDeleted_ShouldReturnOk() throws Exception {
         mockMvc.perform(delete("/tournamentGroups/{id}", 1L)
                 .headers(buildCORSHeaders())
@@ -186,6 +196,7 @@ public class TournamentGroupControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void delete_TournamentGroupNotFound_ShouldReturnNotFound() throws Exception {
         Mockito.doThrow(new ResourceNotFoundException("Could not find TournamentGroup")).when(tournamentGroupServiceMock).
                 deleteTournamentGroup(eq(1L));
