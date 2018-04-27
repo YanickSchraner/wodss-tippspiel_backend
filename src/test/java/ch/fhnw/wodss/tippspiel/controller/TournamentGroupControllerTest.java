@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -72,12 +73,19 @@ public class TournamentGroupControllerTest {
         ArrayList<TournamentGroup> tournamentGroups = new ArrayList<>();
         tournamentGroups.add(new TournamentGroupBuilder().withName("GroupA").withId(1L).build());
         tournamentGroups.add(new TournamentGroupBuilder().withName("GroupB").withId(2L).build());
+        //TODO
         /*Mockito.verify(tournamentGroupServiceMock).getAllTournamentGroups(argThat(new ArgumentMatcher<TournamentGroup>() {
             @Override
             public boolean matches(TournamentGroup argument) {
                 return false;
             }
         }), anyString());*/
+    }
+
+    @Test
+    @WithMockUser(username = "test", roles = {"UNVERIFIED"})
+    public void findAll_asRoleUnverified_accessDenied() throws Exception {
+        //TODO
     }
 
     @Test
@@ -109,6 +117,13 @@ public class TournamentGroupControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "test", roles = {"UNVERIFIED"})
+    public void findById_asRoleUnverified_accessDenied() throws Exception {
+        mockMvc.perform(get("/tournamentGroups/{id}", 1L).headers(buildCORSHeaders()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     @WithMockUser(roles = "USER")
     public void findByName_TournamentGroupFound_ShouldReturnFound() throws Exception {
         TournamentGroup tournamentGroup = new TournamentGroupBuilder()
@@ -128,6 +143,13 @@ public class TournamentGroupControllerTest {
                 .build();
         Mockito.verify(tournamentGroupServiceMock, times(1)).
                 getTournamentGroupByName(eq(tournamentGroup.getName()));
+    }
+
+    @Test
+    @WithMockUser(username = "test", roles = {"UNVERIFIED"})
+    public void findByName_asRoleUnverified_accessDenied() throws Exception {
+        mockMvc.perform(get("/name/{name}", "GruppeA").headers(buildCORSHeaders()))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -166,6 +188,22 @@ public class TournamentGroupControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testUser", roles = {"UNVERIFIED"})
+    public void create_asRoleUnverified_accessDenied() throws Exception {
+        TournamentGroup tournamentGroup = new TournamentGroupBuilder()
+                .withId(4L)
+                .withName("GroupD")
+                .build();
+        when(tournamentGroupServiceMock.addTournamentGroup(eq(tournamentGroup))).thenReturn(tournamentGroup);
+        mockMvc.perform(post("/tournamentGroups")
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                .content(TestUtil.convertObjectToJsonBytes(tournamentGroup))
+                .headers(buildCORSHeaders()))
+                .andExpect(status().isForbidden());
+        Mockito.verify(tournamentGroupServiceMock, times(0)).addTournamentGroup(eq(tournamentGroup));
+    }
+
+    @Test
     @WithMockUser(roles = "ADMIN")
     public void update_TournamentGroupUpdated_ShouldReturnOk() throws Exception {
         TournamentGroup tournamentGroup = new TournamentGroupBuilder()
@@ -182,6 +220,24 @@ public class TournamentGroupControllerTest {
                 .andExpect(jsonPath("$.id", equalTo(tournamentGroup.getId())))
                 .andExpect(jsonPath("$.name", equalTo(tournamentGroup.getName())));
         Mockito.verify(tournamentGroupServiceMock, times(1)).
+                updateTournamentGroup(eq(tournamentGroup.getId()), eq(tournamentGroup));
+    }
+
+    @Test
+    @WithMockUser(username = "testUser", roles = {"UNVERIFIED"})
+    public void update_asRoleUnverified_accessDenied() throws Exception {
+        TournamentGroup tournamentGroup = new TournamentGroupBuilder()
+                .withId(4L)
+                .withName("GroupD")
+                .build();
+        when(tournamentGroupServiceMock.addTournamentGroup(eq(tournamentGroup))).thenReturn(tournamentGroup);
+        mockMvc.perform(put("/tournamentGroups/{id}", 1L)
+                .headers(buildCORSHeaders())
+                .header("Accept", "application/json")
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(TestUtil.convertObjectToJsonBytes(tournamentGroup)))
+                .andExpect(status().isForbidden());
+        Mockito.verify(tournamentGroupServiceMock, times(0)).
                 updateTournamentGroup(eq(tournamentGroup.getId()), eq(tournamentGroup));
     }
 
@@ -205,6 +261,16 @@ public class TournamentGroupControllerTest {
                 .header("Accept", "application/json"))
                 .andExpect(status().isNotFound());
         Mockito.verify(tournamentGroupServiceMock, times(1)).deleteTournamentGroup(eq(1L));
+    }
+
+    @Test
+    @WithMockUser(username = "testUser", roles = {"UNVERIFIED"})
+    public void delete_asRoleUnverified_accessDenied() throws Exception {
+        mockMvc.perform(delete("/tournamentGroups/{id}", 1L)
+                .headers(buildCORSHeaders())
+                .header("Accept", "application/json"))
+                .andExpect(status().isForbidden());
+        Mockito.verify(tournamentGroupServiceMock, times(0)).deleteTournamentGroup(eq(1L));
     }
 
     private HttpHeaders buildCORSHeaders() {
