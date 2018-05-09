@@ -141,9 +141,9 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 /backend.iml
-/gradlew
-/gradlew.bat
-/gradle/
+!/gradlew
+!/gradlew.bat
+!/gradle/
 
 # Custom
 logs/*
