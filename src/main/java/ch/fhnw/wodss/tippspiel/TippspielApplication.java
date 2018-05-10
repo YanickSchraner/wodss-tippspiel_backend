@@ -14,7 +14,7 @@ public class TippspielApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(TippspielApplication.class, args);
-
     }
+
 
 }
