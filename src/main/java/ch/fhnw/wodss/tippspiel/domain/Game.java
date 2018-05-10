@@ -21,7 +21,6 @@ public class Game {
 
     @Column
     @NotNull
-    @Max(Integer.MAX_VALUE)
     private LocalDateTime dateTime;
 
     @Column
