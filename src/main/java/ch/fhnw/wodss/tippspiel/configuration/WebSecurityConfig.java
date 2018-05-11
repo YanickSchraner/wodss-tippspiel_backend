@@ -40,7 +40,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     @Override
-    protected AuthenticationManager authenticationManager() throws Exception{
+    protected AuthenticationManager authenticationManager() throws Exception {
         return super.authenticationManager();
     }
 
@@ -59,7 +59,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .passwordEncoder(passwordEncoder);
     }
 
-    // Todo move HTTPS settings to apache server
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -73,24 +72,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(restAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .logout().logoutSuccessHandler((request, response, authentication) -> response.setStatus(HttpServletResponse.SC_OK))
                 .and()
-                // Security Headers http://docs.spring.io/spring-security/site/docs/current/reference/html/headers.html
                 .headers()
                 .frameOptions().sameOrigin()
                 .contentSecurityPolicy("default-src 'self'; script-src 'self' 'unsafe-inline'; report-uri /csp")
-                // HSTS (you may consider setting this header in the ssl handling part of your app e.g. apache, nginix)
                 .and()
-                // be careful when deploying this 2 years policy because it will prevent your customers browsers from visiting your page without ssl
                 .httpStrictTransportSecurity()
                 .maxAgeInSeconds(63072000);
-        // Provide a logout route to clear the session
         http
                 .logout()
                 .logoutUrl("/logout")
                 .invalidateHttpSession(true)
                 .deleteCookies("BettingGame_SchranerOhmeZumbrunn_JSESSIONID");
-
-        // Use session fixation for secure HTTP to HTTPS rewrite
-        // NOTE: https://en.wikipedia.org/wiki/Session_fixation
         http
                 .sessionManagement()
                 .sessionFixation()

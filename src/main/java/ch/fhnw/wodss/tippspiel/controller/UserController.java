@@ -10,6 +10,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users")
-@PreAuthorize("hasRole('USER')")
+//@PreAuthorize("hasRole('USER')")
 public class UserController {
 
     private final UserService service;
@@ -26,6 +27,11 @@ public class UserController {
     @Autowired
     public UserController(UserService service) {
         this.service = service;
+    }
+
+    @RequestMapping(value = "/self", method = RequestMethod.GET)
+    public ResponseEntity<User> getLogedInUser(@AuthenticationPrincipal User user) {
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping(produces = "application/json")

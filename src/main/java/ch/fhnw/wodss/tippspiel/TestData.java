@@ -31,8 +31,8 @@ public class TestData {
     public void initData() {
         Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder();
         String password = argon2PasswordEncoder.encode("password");
-        Role user = new Role("USER");
-        Role admin = new Role("ADMIN");
+        Role user = new Role("ROLE_USER");
+        Role admin = new Role("ROLE_ADMIN");
         roleRepository.save(user);
         roleRepository.save(admin);
         Set<Role> adminRoles = new HashSet<>();
@@ -63,7 +63,5 @@ public class TestData {
         Game game1 = new Game(LocalDateTime.now(), 3, 0, switzerland, brasil, location, groupPhase);
         Game game2 = new Game(LocalDateTime.now().plusDays(10L), 0, 5, brasil, serbia, location, groupPhase);
         gameRepository.save(game1);
-        gameRepository.save(game2);
-
     }
 }
