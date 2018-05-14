@@ -23,7 +23,7 @@ public class RESTAuthenticationSuccessHandler implements AuthenticationSuccessHa
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         String username = authentication.getName();
         Gson gson = new Gson();
-        User user = userRepository.findUserByNameEquals(username).orElse(new User());
+        User user = userRepository.findUserByEmailEquals(username).orElse(new User());
         User small = new User(user.getName(), "", user.getEmail(), user.getBets(), new ArrayList<>(), user.isReminders(), user.isDailyResults(), user.getRoles());
         response.getWriter().write(gson.toJson(small));
         response.setContentType("application/json");

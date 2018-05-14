@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -39,6 +38,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private EnforceCorsFilter enforceCorsFilter;
+
+    @Autowired
+    private XRequestedWithHeaderFilter xRequestedWithHeaderFilter;
+
     @Bean
     @Override
     protected AuthenticationManager authenticationManager() throws Exception {
@@ -64,17 +69,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers(HttpMethod.OPTIONS).permitAll()
                 .anyRequest().authenticated()
                 .and().exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 .and().anonymous().disable()
                 .csrf().disable() // CSRF protection is done with custom HTTP header (OWASP suggestion)
-                .addFilterBefore(new XRequestedWithHeaderFilter(), CsrfFilter.class)
-                .addFilterBefore(new EnforceCorsFilter(), CsrfFilter.class)
+                .addFilterBefore(xRequestedWithHeaderFilter, CsrfFilter.class)
+                .addFilterBefore(enforceCorsFilter, CsrfFilter.class)
                 .addFilterBefore(restAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .logout().logoutSuccessHandler((request, response, authentication) -> response.setStatus(HttpServletResponse.SC_OK))
                 .and()
                 .headers()
+                .frameOptions().sameOrigin()
                 .contentSecurityPolicy("default-src 'self'; script-src 'self' 'unsafe-inline'; report-uri /csp")
                 .and()
                 .httpStrictTransportSecurity()

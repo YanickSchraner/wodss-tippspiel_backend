@@ -1,6 +1,7 @@
 package ch.fhnw.wodss.tippspiel.configuration;
 
 import org.springframework.stereotype.Component;
+import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -19,7 +20,7 @@ public class XRequestedWithHeaderFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String header = request.getHeader("X-Requested-With");
-        if (header == null || header.isEmpty()) {
+        if ((header == null || header.isEmpty()) && !CorsUtils.isCorsRequest(request)) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "X-Requested-With Header is not present or empty");
         } else {
             filterChain.doFilter(request, response);
