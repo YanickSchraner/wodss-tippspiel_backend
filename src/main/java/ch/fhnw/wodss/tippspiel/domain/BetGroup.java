@@ -36,7 +36,7 @@ public class BetGroup {
     private Integer score;
 
     @Column
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     private List<User> members;
 
     public BetGroup(String name, String password, Integer score, List<User> members){

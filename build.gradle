@@ -33,6 +33,11 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-security')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-starter-cache')
+    compile 'com.google.api-client:google-api-client:1.23.0'
+    compile 'com.google.oauth-client:google-oauth-client-jetty:1.23.0'
+    compile 'com.google.apis:google-api-services-gmail:v1-rev83-1.23.0'
+    compile group: 'javax.mail', name: 'javax.mail-api', version: '1.6.1'
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.4'
     runtime('org.springframework.boot:spring-boot-devtools')
     compileOnly('org.projectlombok:lombok')
     compile group: 'org.springframework', name: 'spring-aspects', version: '5.0.4.RELEASE'
