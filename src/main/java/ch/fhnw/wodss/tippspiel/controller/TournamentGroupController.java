@@ -78,7 +78,7 @@ public class TournamentGroupController {
         return new ResponseEntity<>(newGroup, HttpStatus.OK);
     }
 
-    @CacheEvict(value = "tournametGroups", key = "#tournamentGroup.id")
+    @CacheEvict(value = "tournametGroups", key = "#id")
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteTournamentGroup(@PathVariable Long id) {
