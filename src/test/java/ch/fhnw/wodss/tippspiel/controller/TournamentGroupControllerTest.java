@@ -2,9 +2,12 @@ package ch.fhnw.wodss.tippspiel.controller;
 
 import ch.fhnw.wodss.tippspiel.TestUtil;
 import ch.fhnw.wodss.tippspiel.builder.TournamentGroupBuilder;
+import ch.fhnw.wodss.tippspiel.builder.UserBuilder;
 import ch.fhnw.wodss.tippspiel.domain.TournamentGroup;
+import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.service.TournamentGroupService;
+import ch.fhnw.wodss.tippspiel.service.UserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,14 +52,13 @@ public class TournamentGroupControllerTest {
     private TournamentGroupService tournamentGroupServiceMock;
 
     @MockBean
-    private TournamentGroupService tournamentGroupService;
+    private UserService userService;
 
     @Before
     public void mockUserService() {
-        ArrayList<TournamentGroup> tournamentGroups = new ArrayList<>();
-        tournamentGroups.add(new TournamentGroupBuilder().withName("GroupA").withId(1L).build());
-        tournamentGroups.add(new TournamentGroupBuilder().withName("GroupB").withId(2L).build());
-        when(tournamentGroupService.getAllTournamentGroups()).thenReturn(tournamentGroups);
+        ArrayList<User> users = new ArrayList<>();
+        users.add(new UserBuilder().withName("Tom").withRole("USER").withId(1L).build());
+        when(userService.getAllUsers()).thenReturn(users);
     }
 
     @Before
@@ -73,19 +75,24 @@ public class TournamentGroupControllerTest {
         ArrayList<TournamentGroup> tournamentGroups = new ArrayList<>();
         tournamentGroups.add(new TournamentGroupBuilder().withName("GroupA").withId(1L).build());
         tournamentGroups.add(new TournamentGroupBuilder().withName("GroupB").withId(2L).build());
-        //TODO
-        /*Mockito.verify(tournamentGroupServiceMock).getAllTournamentGroups(argThat(new ArgumentMatcher<TournamentGroup>() {
-            @Override
-            public boolean matches(TournamentGroup argument) {
-                return false;
-            }
-        }), anyString());*/
+        when(tournamentGroupServiceMock.getAllTournamentGroups()).thenReturn(tournamentGroups);
+        mockMvc.perform(get("/tournamentGroups")
+                .headers(buildCORSHeaders())
+                .header("Accept", "application/json")
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.[0].id", equalTo(1)))
+                .andExpect(jsonPath("$.[0].name", equalTo("GroupA")))
+                .andExpect(jsonPath("$.[1].id", equalTo(2)))
+                .andExpect(jsonPath("$.[1].name", equalTo("GroupB")));
+        Mockito.verify(tournamentGroupServiceMock, times(1)).getAllTournamentGroups();
     }
 
     @Test
     @WithMockUser(username = "test", roles = {"UNVERIFIED"})
     public void findAll_asRoleUnverified_accessDenied() throws Exception {
-        //TODO
+        mockMvc.perform(get("/tournamentGroups").headers(buildCORSHeaders()))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -95,25 +102,27 @@ public class TournamentGroupControllerTest {
                 .withId(1L)
                 .withName("GroupA")
                 .build();
-        Mockito.verify(tournamentGroupServiceMock, times(1)).
-                getTournamentGroupById(eq(tournamentGroup.getId()));
+        when(tournamentGroupServiceMock.getTournamentGroupById(eq(1L))).thenReturn(tournamentGroup);
+        mockMvc.perform(get("/tournamentGroups/{id}", 1L)
+                .headers(buildCORSHeaders())
+                .header("Accept", "application/json")
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", equalTo(1)))
+                .andExpect(jsonPath("$.name", equalTo("GroupA")));
+        Mockito.verify(tournamentGroupServiceMock, times(1)).getTournamentGroupById(eq(1L));
     }
 
     @Test
     @WithMockUser(roles = "USER")
     public void findById_TournamentGroupNotExisting_ShouldReturnNotFound() throws Exception {
-        TournamentGroup tournamentGroup = new TournamentGroupBuilder()
-                .withId(3L)
-                .withName("GroupC")
-                .build();
-        when(tournamentGroupServiceMock.getTournamentGroupById(eq(tournamentGroup.getId()))).
+        when(tournamentGroupServiceMock.getTournamentGroupById(eq(2L))).
                 thenThrow(new ResourceNotFoundException("Could not find TournamentGroup"));
-        mockMvc.perform(get("/tournamentGroups/{id}", tournamentGroup.getId())
+        mockMvc.perform(get("/tournamentGroups/{id}", 2L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json"))
                 .andExpect(status().isNotFound());
-        Mockito.verify(tournamentGroupServiceMock, times(1)).
-                getTournamentGroupById(eq(tournamentGroup.getId()));
+        Mockito.verify(tournamentGroupServiceMock, times(1)).getTournamentGroupById(eq(2L));
     }
 
     @Test
@@ -130,25 +139,33 @@ public class TournamentGroupControllerTest {
                 .withId(1L)
                 .withName("GroupA")
                 .build();
-        Mockito.verify(tournamentGroupServiceMock, times(1)).
-                getTournamentGroupByName(eq(tournamentGroup.getName()));
+        when(tournamentGroupServiceMock.getTournamentGroupByName(eq("GroupA"))).thenReturn(tournamentGroup);
+        mockMvc.perform(get("/tournamentGroups/name/{name}", "GroupA")
+                .headers(buildCORSHeaders())
+                .header("Accept", "application/json")
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", equalTo(1)))
+                .andExpect(jsonPath("$.name", equalTo("GroupA")));
+        Mockito.verify(tournamentGroupServiceMock, times(1)).getTournamentGroupByName(eq("GroupA"));
     }
 
     @Test
     @WithMockUser(roles = "USER")
     public void findByName_TournamentGroupNotExisting_ShouldReturnFound() throws Exception {
-        TournamentGroup tournamentGroup = new TournamentGroupBuilder()
-                .withId(3L)
-                .withName("GroupC")
-                .build();
-        Mockito.verify(tournamentGroupServiceMock, times(1)).
-                getTournamentGroupByName(eq(tournamentGroup.getName()));
+        when(tournamentGroupServiceMock.getTournamentGroupByName(eq("GroupA"))).
+                thenThrow(new ResourceNotFoundException("Could not find TournamentGroup"));
+        mockMvc.perform(get("/tournamentGroups/name/{name}", "GroupA")
+                .headers(buildCORSHeaders())
+                .header("Accept", "application/json"))
+                .andExpect(status().isNotFound());
+        Mockito.verify(tournamentGroupServiceMock, times(1)).getTournamentGroupByName(eq("GroupA"));
     }
 
     @Test
     @WithMockUser(username = "test", roles = {"UNVERIFIED"})
     public void findByName_asRoleUnverified_accessDenied() throws Exception {
-        mockMvc.perform(get("/name/{name}", "GruppeA").headers(buildCORSHeaders()))
+        mockMvc.perform(get("/tournamentGroups/name/{name}", 1L).headers(buildCORSHeaders()))
                 .andExpect(status().isForbidden());
     }
 
@@ -156,8 +173,8 @@ public class TournamentGroupControllerTest {
     @WithMockUser(roles = "ADMIN")
     public void create_TournamentGroupCreated_ShouldReturnCreated() throws Exception {
         TournamentGroup tournamentGroup = new TournamentGroupBuilder()
-                .withId(4L)
-                .withName("GroupD")
+                .withId(1L)
+                .withName("GroupA")
                 .build();
         when(tournamentGroupServiceMock.addTournamentGroup(eq(tournamentGroup))).thenReturn(tournamentGroup);
         mockMvc.perform(post("/tournamentGroups")
@@ -166,8 +183,8 @@ public class TournamentGroupControllerTest {
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(tournamentGroup)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id", equalTo(tournamentGroup.getId())))
-                .andExpect(jsonPath("$.name", equalTo(tournamentGroup.getName())));
+                .andExpect(jsonPath("$.id", equalTo(1)))
+                .andExpect(jsonPath("$.name", equalTo("GroupA")));
         Mockito.verify(tournamentGroupServiceMock, times(1)).addTournamentGroup(eq(tournamentGroup));
     }
 
@@ -191,8 +208,8 @@ public class TournamentGroupControllerTest {
     @WithMockUser(username = "testUser", roles = {"UNVERIFIED"})
     public void create_asRoleUnverified_accessDenied() throws Exception {
         TournamentGroup tournamentGroup = new TournamentGroupBuilder()
-                .withId(4L)
-                .withName("GroupD")
+                .withId(1L)
+                .withName("GroupA")
                 .build();
         when(tournamentGroupServiceMock.addTournamentGroup(eq(tournamentGroup))).thenReturn(tournamentGroup);
         mockMvc.perform(post("/tournamentGroups")
@@ -208,37 +225,70 @@ public class TournamentGroupControllerTest {
     public void update_TournamentGroupUpdated_ShouldReturnOk() throws Exception {
         TournamentGroup tournamentGroup = new TournamentGroupBuilder()
                 .withId(1L)
-                .withName("GroupAA")
+                .withName("GroupB")
                 .build();
-        when(tournamentGroupServiceMock.updateTournamentGroup(eq(tournamentGroup.getId()), eq(tournamentGroup))).thenReturn(tournamentGroup);
-        mockMvc.perform(put("/tournamentGroups/{id}", tournamentGroup.getId())
+        when(tournamentGroupServiceMock.updateTournamentGroup(eq(1L), eq(tournamentGroup))).thenReturn(tournamentGroup);
+        mockMvc.perform(put("/tournamentGroups/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(tournamentGroup)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", equalTo(tournamentGroup.getId())))
-                .andExpect(jsonPath("$.name", equalTo(tournamentGroup.getName())));
-        Mockito.verify(tournamentGroupServiceMock, times(1)).
-                updateTournamentGroup(eq(tournamentGroup.getId()), eq(tournamentGroup));
+                .andExpect(jsonPath("$.id", equalTo(1)))
+                .andExpect(jsonPath("$.name", equalTo("GroupB")));
+        Mockito.verify(tournamentGroupServiceMock, times(1)).updateTournamentGroup(eq(1L), eq(tournamentGroup));
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    public void update_InvalidTournamentGroupFormat_ShouldReturnBadRequest() throws Exception {
+        TournamentGroup tournamentGroup = new TournamentGroupBuilder()
+                .withId(1L)
+                .build();
+        when(tournamentGroupServiceMock.updateTournamentGroup(eq(1L), eq(tournamentGroup))).thenReturn(tournamentGroup);
+        mockMvc.perform(put("/tournamentGroups/{id}", 1L)
+                .headers(buildCORSHeaders())
+                .header("Accept", "application/json")
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(TestUtil.convertObjectToJsonBytes(tournamentGroup)))
+                .andExpect(status().isBadRequest());
+        Mockito.verify(tournamentGroupServiceMock, times(0)).updateTournamentGroup(eq(1L), eq(tournamentGroup));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void update_TournamentGroupNotFound_ShouldReturnNotFound() throws Exception {
+        TournamentGroup tournamentGroup = new TournamentGroupBuilder()
+                .withId(1L)
+                .withName("GroupA")
+                .build();
+        when(tournamentGroupServiceMock.updateTournamentGroup(eq(1L), eq(tournamentGroup))).
+                thenThrow(new ResourceNotFoundException("Tournament group not found"));
+        mockMvc.perform(put("/tournamentGroups/{id}", 1L)
+                .headers(buildCORSHeaders())
+                .header("Accept", "application/json")
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(TestUtil.convertObjectToJsonBytes(tournamentGroup)))
+                .andExpect(status().isNotFound());
+        Mockito.verify(tournamentGroupServiceMock, times(1)).updateTournamentGroup(eq(1L), eq(tournamentGroup));
+
     }
 
     @Test
     @WithMockUser(username = "testUser", roles = {"UNVERIFIED"})
     public void update_asRoleUnverified_accessDenied() throws Exception {
         TournamentGroup tournamentGroup = new TournamentGroupBuilder()
-                .withId(4L)
-                .withName("GroupD")
+                .withId(1L)
+                .withName("GroupA")
                 .build();
-        when(tournamentGroupServiceMock.addTournamentGroup(eq(tournamentGroup))).thenReturn(tournamentGroup);
+        when(tournamentGroupServiceMock.updateTournamentGroup(eq(1L), eq(tournamentGroup))).thenReturn(tournamentGroup);
         mockMvc.perform(put("/tournamentGroups/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(tournamentGroup)))
                 .andExpect(status().isForbidden());
-        Mockito.verify(tournamentGroupServiceMock, times(0)).
-                updateTournamentGroup(eq(tournamentGroup.getId()), eq(tournamentGroup));
+        Mockito.verify(tournamentGroupServiceMock, times(0)).updateTournamentGroup(eq(1L), eq(tournamentGroup));
     }
 
     @Test
