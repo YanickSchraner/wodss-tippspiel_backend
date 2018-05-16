@@ -52,7 +52,7 @@ public class TournamentGroupController {
 
     @Caching(put = {
             @CachePut(value = "tournametGroups", key = "#tournamentGroup.id", unless = "#result.statusCode != 201"),
-            @CachePut(value = "tournametGroupsName", key = "#tournamentGroup.name", unless = "#result.statusCode != 201")
+            @CachePut(value = "tournametGroupsName", condition = "#tournamentGroup.name != null", key = "#tournamentGroup.name", unless = "#result.statusCode != 201")
     })
     @PostMapping(produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
