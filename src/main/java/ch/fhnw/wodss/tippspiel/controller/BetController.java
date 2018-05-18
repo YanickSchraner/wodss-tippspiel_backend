@@ -60,7 +60,7 @@ public class BetController {
         return new ResponseEntity<>("Bet deleted", HttpStatus.OK);
     }
 
-    @GetMapping(value = "/user{id}", produces = "application/json")
+    @GetMapping(value = "/{id}/user", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<BetDTO>> getBetsForUser(@AuthenticationPrincipal User user, @PathVariable Long userId) {
         return new ResponseEntity<>(service.getBetsForUser(userId, user), HttpStatus.OK);
