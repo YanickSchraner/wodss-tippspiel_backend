@@ -39,13 +39,13 @@ public class BetService {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public Bet getBetById(Long id, User user) {
+    public BetDTO getBetById(Long id, User user) {
         Optional<Bet> bet = betRepository.findById(id);
         long betOwner = bet.orElseThrow(() -> new ResourceNotFoundException("Could not find Bet with id: " + id))
                 .getUser().getId();
         if (betOwner != user.getId())
             throw new ResourceNotAllowedException("This bet with id: " + id + ", doesn't belong to the user with id: " + user.getId());
-        return bet.get();
+        return convertBetToBetDTO(bet.get());
     }
 
     @Transactional(propagation = Propagation.REQUIRED)

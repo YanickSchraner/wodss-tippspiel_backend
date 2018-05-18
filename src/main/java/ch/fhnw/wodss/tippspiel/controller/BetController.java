@@ -1,6 +1,5 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
-import ch.fhnw.wodss.tippspiel.domain.Bet;
 import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.dto.BetDTO;
 import ch.fhnw.wodss.tippspiel.dto.RestBetDTO;
@@ -29,7 +28,7 @@ public class BetController {
 
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Bet> getBetById(@AuthenticationPrincipal User user, @PathVariable Long id) {
+    public ResponseEntity<BetDTO> getBetById(@AuthenticationPrincipal User user, @PathVariable Long id) {
         return new ResponseEntity<>(service.getBetById(id, user), HttpStatus.OK);
     }
 
