@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -121,6 +122,16 @@ public class BetService {
         } else {
             throw new IllegalActionException("The game has started. The bet can't be deleted.");
         }
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    public List<BetDTO> getBetsForUser(Long userId, User user) {
+        List<Bet> bets = betRepository.getBetsForUser(userId);
+        List<BetDTO> betsDTO = new ArrayList<>();
+        for (Bet bet : bets) {
+            betsDTO.add(convertBetToBetDTO(bet));
+        }
+        return betsDTO;
     }
 
     private BetDTO convertBetToBetDTO(Bet bet) {

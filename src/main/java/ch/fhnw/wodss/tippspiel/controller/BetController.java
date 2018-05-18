@@ -13,6 +13,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/bets")
@@ -58,4 +59,11 @@ public class BetController {
         service.deleteBet(id, user);
         return new ResponseEntity<>("Bet deleted", HttpStatus.OK);
     }
+
+    @GetMapping(value = "/user{id}", produces = "application/json")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<BetDTO>> getBetsForUser(@AuthenticationPrincipal User user, @PathVariable Long userId) {
+        return new ResponseEntity<>(service.getBetsForUser(userId, user), HttpStatus.OK);
+    }
+
 }
