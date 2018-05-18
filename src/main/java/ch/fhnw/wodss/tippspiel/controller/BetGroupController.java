@@ -3,6 +3,7 @@ package ch.fhnw.wodss.tippspiel.controller;
 import ch.fhnw.wodss.tippspiel.domain.BetGroup;
 import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.dto.BetGroupDTO;
+import ch.fhnw.wodss.tippspiel.dto.RestBetGroupDTO;
 import ch.fhnw.wodss.tippspiel.dto.UserAllBetGroupDTO;
 import ch.fhnw.wodss.tippspiel.service.BetGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,11 +67,11 @@ public class BetGroupController {
     })
     @PostMapping(produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BetGroup> addBetGroup(@Valid @RequestBody BetGroup betGroup, BindingResult result) {
+    public ResponseEntity<BetGroupDTO> addBetGroup(@Valid @RequestBody RestBetGroupDTO restBetGroupDTO, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        BetGroup newBetGroup = service.createBetGroup(betGroup);
+        BetGroupDTO newBetGroup = service.createBetGroup(restBetGroupDTO);
         return new ResponseEntity<>(newBetGroup, HttpStatus.CREATED);
     }
 

@@ -2,6 +2,7 @@ package ch.fhnw.wodss.tippspiel.service;
 
 import ch.fhnw.wodss.tippspiel.domain.Bet;
 import ch.fhnw.wodss.tippspiel.dto.BetGroupDTO;
+import ch.fhnw.wodss.tippspiel.dto.RestBetGroupDTO;
 import ch.fhnw.wodss.tippspiel.dto.UserAllBetGroupDTO;
 import ch.fhnw.wodss.tippspiel.domain.BetGroup;
 import ch.fhnw.wodss.tippspiel.domain.User;
@@ -97,18 +98,21 @@ public class BetGroupService {
         }
     }
 
-    // Todo
     @Transactional(propagation = Propagation.REQUIRED)
     public BetGroup removeUser(Long betGroupId, User user) {
         return null;
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public BetGroup createBetGroup(BetGroup betGroup) {
-        if (betGroupRepository.findBetGroupByNameEquals(betGroup.getName()).isPresent()) {
-            throw new IllegalActionException("A bet group with name: " + betGroup.getName() + " already exists.");
+    public BetGroupDTO createBetGroup(RestBetGroupDTO restBetGroupDTO) {
+        if (betGroupRepository.findBetGroupByNameEquals(restBetGroupDTO.getName()).isPresent()) {
+            throw new IllegalActionException("A bet group with name: " + restBetGroupDTO.getName() + " already exists.");
         }
-        return betGroupRepository.save(betGroup);
+        BetGroup betGroup = new BetGroup();
+        betGroup.setName(restBetGroupDTO.getName());
+        betGroup.setPassword(restBetGroupDTO.getPassword());
+        betGroup = betGroupRepository.save(betGroup);
+        return convertBetGroupToBetGroupDTO(betGroup);
     }
 
     // Todo make private if we disable the deletion of a whole group
@@ -124,5 +128,13 @@ public class BetGroupService {
         }
     }
 
+    private BetGroupDTO convertBetGroupToBetGroupDTO(BetGroup betGroup) {
+        BetGroupDTO betGroupDTO = new BetGroupDTO();
+        betGroupDTO.setId(betGroup.getId());
+        betGroupDTO.setName(betGroup.getName());
+        betGroupDTO.setScore(betGroup.getScore());
+        betGroup.setMembers(betGroup.getMembers());
+        return new BetGroupDTO();
+    }
 
 }
