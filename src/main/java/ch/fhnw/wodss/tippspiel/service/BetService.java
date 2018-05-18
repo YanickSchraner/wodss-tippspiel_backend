@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -76,32 +75,14 @@ public class BetService {
         }
     }
 
-    private BetDTO convertBetToBetDTO(Bet bet) {
-        BetDTO betDTO = new BetDTO();
-        betDTO.setId(bet.getId());
-        betDTO.setUserId(bet.getUser().getId());
-        betDTO.setGameId(bet.getGame().getId());
-        betDTO.setUsername(bet.getUser().getUsername());
-        betDTO.setHomeTeamId(bet.getGame().getHomeTeam().getId());
-        betDTO.setAwayTeamId(bet.getGame().getAwayTeam().getId());
-        betDTO.setBettedHomeTeamGoals(bet.getHomeTeamGoals());
-        betDTO.setBettedAwayTeamGoals(bet.getAwayTeamGoals());
-        betDTO.setActualHomeTeamGoals(bet.getGame().getHomeTeamGoals());
-        betDTO.setActualAwayTeamGoals(bet.getGame().getAwayTeamGoals());
-        betDTO.setScore(bet.getScore());
-        betDTO.setLocation(bet.getGame().getLocation().getName());
-        betDTO.setPhase(bet.getGame().getPhase().getName());
-        return new BetDTO();
-    }
-
     @Transactional(propagation = Propagation.REQUIRED)
-    public Bet updateBet(Long id, Bet bet, User user) {
+    public BetDTO updateBet(Long id, RestBetDTO restBetDTO, User user) {
         if (!betRepository.existsById(id)) {
             throw new ResourceNotFoundException("No bet was found to change");
         }
-        Game game = gameRepository.findById(bet.getGame().getId())
+        Game game = gameRepository.findById(restBetDTO.getGameId())
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find Game in Bet with id: "
-                        + bet.getGame().getId()));
+                        + restBetDTO.getGameId()));
 
         boolean alreadyBettedByUser = betRepository.existsBetByUser_IdAndGame_Id(user.getId(), game.getId());
         if (!alreadyBettedByUser)
@@ -110,8 +91,12 @@ public class BetService {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Paris"));
         // Check if date time before game start time
         if (game.getDateTime().isAfter(now)) {
+            Bet bet = new Bet();
             bet.setId(id);
-            return betRepository.save(bet);
+            bet.setAwayTeamGoals(restBetDTO.getHomeTeamGoals());
+            bet.setAwayTeamGoals(restBetDTO.getAwayTeamGoals());
+            bet = betRepository.save(bet);
+            return convertBetToBetDTO(bet);
         } else {
             throw new IllegalActionException("The game has started. The bet can't be updated.");
         }
@@ -136,6 +121,24 @@ public class BetService {
         } else {
             throw new IllegalActionException("The game has started. The bet can't be deleted.");
         }
+    }
+
+    private BetDTO convertBetToBetDTO(Bet bet) {
+        BetDTO betDTO = new BetDTO();
+        betDTO.setId(bet.getId());
+        betDTO.setUserId(bet.getUser().getId());
+        betDTO.setGameId(bet.getGame().getId());
+        betDTO.setUsername(bet.getUser().getUsername());
+        betDTO.setHomeTeamId(bet.getGame().getHomeTeam().getId());
+        betDTO.setAwayTeamId(bet.getGame().getAwayTeam().getId());
+        betDTO.setBettedHomeTeamGoals(bet.getHomeTeamGoals());
+        betDTO.setBettedAwayTeamGoals(bet.getAwayTeamGoals());
+        betDTO.setActualHomeTeamGoals(bet.getGame().getHomeTeamGoals());
+        betDTO.setActualAwayTeamGoals(bet.getGame().getAwayTeamGoals());
+        betDTO.setScore(bet.getScore());
+        betDTO.setLocation(bet.getGame().getLocation().getName());
+        betDTO.setPhase(bet.getGame().getPhase().getName());
+        return new BetDTO();
     }
 
 }

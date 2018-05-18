@@ -45,11 +45,11 @@ public class BetController {
 
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Bet> updateBet(@AuthenticationPrincipal User user, @Valid @RequestBody Bet bet, @PathVariable Long id, BindingResult result) {
+    public ResponseEntity<BetDTO> updateBet(@AuthenticationPrincipal User user, @Valid @RequestBody RestBetDTO restBetDTO, @PathVariable Long id, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        Bet newBet = service.updateBet(id, bet, user);
+        BetDTO newBet = service.updateBet(id, restBetDTO, user);
         return new ResponseEntity<>(newBet, HttpStatus.OK);
     }
 
