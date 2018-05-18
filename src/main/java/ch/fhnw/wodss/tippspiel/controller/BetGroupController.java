@@ -89,14 +89,15 @@ public class BetGroupController {
         return new ResponseEntity<>(betGroup, HttpStatus.CREATED);
     }
 
-    // Todo
     @Caching(evict = {
             @CacheEvict(value = "betGroups", key = "#id"),
             @CacheEvict(value = "betGroupsName", key = "#result.body.name")
     })
     @PutMapping(value = "/{id}/removeUser", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BetGroup> removeUserFromBetGroup(@PathVariable Long id, @Valid @RequestBody User user, BindingResult result) {
-        return null;
+    public ResponseEntity<String> removeUserFromBetGroup(@PathVariable Long id, @Valid @RequestBody User user, BindingResult result) {
+        service.removeUserFromBetGroup(id, user);
+        return new ResponseEntity<>("User from bet group removed", HttpStatus.OK);
+
     }
 }

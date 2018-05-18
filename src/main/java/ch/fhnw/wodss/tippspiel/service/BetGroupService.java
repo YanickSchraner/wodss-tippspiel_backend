@@ -99,8 +99,15 @@ public class BetGroupService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public BetGroup removeUser(Long betGroupId, User user) {
-        return null;
+    public void removeUserFromBetGroup(Long betGroupId, User user) {
+        userRepository.findById(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find given user."));
+        betGroupRepository.findById(betGroupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find bet group with id: " + betGroupId));
+        boolean containsUser = betGroupRepository.existsBetGroupsByMembersContaining(user.getId());
+        if (containsUser) {
+            deleteBetGroup(betGroupId);
+        }
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
