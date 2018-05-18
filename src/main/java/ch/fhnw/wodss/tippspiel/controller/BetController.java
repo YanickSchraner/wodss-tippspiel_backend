@@ -2,6 +2,8 @@ package ch.fhnw.wodss.tippspiel.controller;
 
 import ch.fhnw.wodss.tippspiel.domain.Bet;
 import ch.fhnw.wodss.tippspiel.domain.User;
+import ch.fhnw.wodss.tippspiel.dto.BetDTO;
+import ch.fhnw.wodss.tippspiel.dto.RestBetDTO;
 import ch.fhnw.wodss.tippspiel.service.BetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,11 +35,11 @@ public class BetController {
 
     @PostMapping(produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Bet> addBet(@AuthenticationPrincipal User user, @Valid @RequestBody Bet bet, BindingResult result) {
+    public ResponseEntity<BetDTO> addBet(@AuthenticationPrincipal User user, @Valid @RequestBody RestBetDTO restBetDTO, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        Bet newBet = service.addBet(bet, user);
+        BetDTO newBet = service.addBet(restBetDTO, user);
         return new ResponseEntity<>(newBet, HttpStatus.CREATED);
     }
 
