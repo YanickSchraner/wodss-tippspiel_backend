@@ -1,6 +1,8 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
 import ch.fhnw.wodss.tippspiel.domain.TournamentTeam;
+import ch.fhnw.wodss.tippspiel.dto.RestTournamentTeamDTO;
+import ch.fhnw.wodss.tippspiel.dto.TournamentTeamDTO;
 import ch.fhnw.wodss.tippspiel.service.TournamentTeamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -29,33 +31,33 @@ public class TournamentTeamController {
 
     @GetMapping(produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<TournamentTeam>> getAllTournamentTeams() {
+    public ResponseEntity<List<TournamentTeamDTO>> getAllTournamentTeams() {
         return new ResponseEntity<>(service.getAllTournamentTeams(), HttpStatus.OK);
     }
 
     @Cacheable(value = "tournamentTeams", key = "#id", unless = "#result.statusCode != 200")
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<TournamentTeam> getTournamentTeamById(@PathVariable Long id) {
-        TournamentTeam team = service.getTournamentTeamById(id);
+    public ResponseEntity<TournamentTeamDTO> getTournamentTeamById(@PathVariable Long id) {
+        TournamentTeamDTO team = service.getTournamentTeamById(id);
         return new ResponseEntity<>(team, HttpStatus.OK);
     }
 
     @GetMapping(value = "/name/{name}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<TournamentTeam> getTournamentTeamByName(@PathVariable String name) {
-        TournamentTeam team = service.getTournamentTeamByName(name);
+    public ResponseEntity<TournamentTeamDTO> getTournamentTeamByName(@PathVariable String name) {
+        TournamentTeamDTO team = service.getTournamentTeamByName(name);
         return new ResponseEntity<>(team, HttpStatus.OK);
     }
 
     @CachePut(value = "tournamentTeams", key ="#tournamentTeam.id", unless = "#result.statusCode != 201")
     @PostMapping(produces = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TournamentTeam> addTournamentTeam(@Valid @RequestBody TournamentTeam tournamentTeam, BindingResult result) {
+    public ResponseEntity<TournamentTeamDTO> addTournamentTeam(@Valid @RequestBody RestTournamentTeamDTO restTournamentTeamDTO, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        TournamentTeam newTeam = service.addTournamentTeam(tournamentTeam);
+        TournamentTeamDTO newTeam = service.addTournamentTeam(restTournamentTeamDTO);
         return new ResponseEntity<>(newTeam, HttpStatus.CREATED);
     }
 

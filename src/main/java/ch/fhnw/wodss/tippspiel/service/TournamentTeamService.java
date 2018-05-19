@@ -1,8 +1,12 @@
 package ch.fhnw.wodss.tippspiel.service;
 
+import ch.fhnw.wodss.tippspiel.domain.TournamentGroup;
 import ch.fhnw.wodss.tippspiel.domain.TournamentTeam;
+import ch.fhnw.wodss.tippspiel.dto.RestTournamentTeamDTO;
+import ch.fhnw.wodss.tippspiel.dto.TournamentTeamDTO;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
+import ch.fhnw.wodss.tippspiel.persistance.TournamentGroupRepository;
 import ch.fhnw.wodss.tippspiel.persistance.TournamentTeamRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +14,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,35 +22,49 @@ import java.util.List;
 public class TournamentTeamService {
 
     private final TournamentTeamRepository repository;
+    private final TournamentGroupRepository tournamentGroupRepository;
 
     @Autowired
-    public TournamentTeamService(TournamentTeamRepository repository) {
+    public TournamentTeamService(TournamentTeamRepository repository, TournamentGroupRepository tournamentGroupRepository) {
         this.repository = repository;
+        this.tournamentGroupRepository = tournamentGroupRepository;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public List<TournamentTeam> getAllTournamentTeams() {
-        return repository.findAll();
+    public List<TournamentTeamDTO> getAllTournamentTeams() {
+        List<TournamentTeam> tournamentTeams = repository.findAll();
+        List<TournamentTeamDTO> tournamentTeamDTOS = new ArrayList<>();
+        for (TournamentTeam tournamentTeam : tournamentTeams) {
+            tournamentTeamDTOS.add(convertTournamentTeamToTournamanetTeamDTO(tournamentTeam));
+        }
+        return tournamentTeamDTOS;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public TournamentTeam getTournamentTeamById(Long id) {
-        return repository.findById(id)
+    public TournamentTeamDTO getTournamentTeamById(Long id) {
+        TournamentTeam tournamentTeam = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Can't find a tournament team with id: " + id));
+        return convertTournamentTeamToTournamanetTeamDTO(tournamentTeam);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public TournamentTeam getTournamentTeamByName(String name) {
-        return repository.findTournamentTeamByNameEquals(name)
+    public TournamentTeamDTO getTournamentTeamByName(String name) {
+        TournamentTeam tournamentTeam = repository.findTournamentTeamByNameEquals(name)
                 .orElseThrow(() -> new ResourceNotFoundException("Can't find a tournament team with name: " + name));
+        return convertTournamentTeamToTournamanetTeamDTO(tournamentTeam);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public TournamentTeam addTournamentTeam(TournamentTeam tournamentTeam) {
-        if (repository.findTournamentTeamByNameEquals(tournamentTeam.getName()).isPresent()) {
-            throw new IllegalActionException("There is already a tournament team with the name: " + tournamentTeam.getName());
+    public TournamentTeamDTO addTournamentTeam(RestTournamentTeamDTO restTournamentTeamDTO) {
+        if (repository.findTournamentTeamByNameEquals(restTournamentTeamDTO.getName()).isPresent()) {
+            throw new IllegalActionException("There is already a tournament team with the name: " + restTournamentTeamDTO.getName());
         }
-        return null;
+        TournamentTeam tournamentTeam = new TournamentTeam();
+        tournamentTeam.setName(restTournamentTeamDTO.getName());
+        //TODO
+        //TournamentGroup tournamentGroup = tournamentGroupRepository.findById(restTournamentTeamDTO.getTournamentGroupId());
+        //set
+        return convertTournamentTeamToTournamanetTeamDTO(tournamentTeam);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
@@ -68,4 +87,12 @@ public class TournamentTeamService {
             throw new ResourceNotFoundException("Can't find a tournament team with id: " + id + " to delete.");
         }
     }
+
+    private TournamentTeamDTO convertTournamentTeamToTournamanetTeamDTO(TournamentTeam tournamentTeam) {
+        TournamentTeamDTO tournamentTeamDTO = new TournamentTeamDTO();
+        tournamentTeamDTO.setName(tournamentTeam.getName());
+        tournamentTeamDTO.setTournamentGroupName(tournamentTeam.getGroup().getName());
+        return new TournamentTeamDTO();
+    }
+
 }
