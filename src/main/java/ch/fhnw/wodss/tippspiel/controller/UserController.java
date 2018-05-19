@@ -1,6 +1,8 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
 import ch.fhnw.wodss.tippspiel.domain.User;
+import ch.fhnw.wodss.tippspiel.dto.RestUserDTO;
+import ch.fhnw.wodss.tippspiel.dto.UserDTO;
 import ch.fhnw.wodss.tippspiel.dto.UserRankingDTO;
 import ch.fhnw.wodss.tippspiel.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +32,13 @@ public class UserController {
     }
 
     @RequestMapping(value = "/self", method = RequestMethod.GET)
-    public ResponseEntity<User> getLogedInUser(@AuthenticationPrincipal User user) {
+    public ResponseEntity<User> getLoggedInUser(@AuthenticationPrincipal User user) {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping(produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
         return new ResponseEntity<>(service.getAllUsers(), HttpStatus.OK);
     }
 
@@ -49,37 +51,37 @@ public class UserController {
     @Cacheable(value = "users", key = "#id", unless = "#result.statusCode != 200")
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        User user = service.getUserById(id);
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+        UserDTO user = service.getUserById(id);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping(value = "/name/{name}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<User> getUserByName(@PathVariable String name) {
-        User user = service.getUserByName(name);
+    public ResponseEntity<UserDTO> getUserByName(@PathVariable String name) {
+        UserDTO user = service.getUserByName(name);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @CachePut(value = "users", key = "#user.id", unless = "result.statusCode != 201")
     @PostMapping(produces = "application/json", consumes = "application/json")
-    public ResponseEntity<User> addUser(@Valid @RequestBody User user, BindingResult result) {
+    public ResponseEntity<UserDTO> addUser(@Valid @RequestBody RestUserDTO restUserDTO, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        User newUser = service.addUser(user);
+        UserDTO newUser = service.addUser(restUserDTO);
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
     @CachePut(value = "users", key = "#id", unless = "#result.statusCode != 200")
     @PutMapping(value = "/{id}/email", consumes = "application/json", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<User> updateUserEmail(@Valid @RequestBody User user, @PathVariable Long id, BindingResult result) {
+    public ResponseEntity<UserDTO> updateUserEmail(@Valid @RequestBody RestUserDTO restUserDTO, @PathVariable Long id, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        User newUser = service.changeEmail(id, user);
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        UserDTO newUser = service.changeEmail(id, restUserDTO);
+        return new ResponseEntity<>(newUser, HttpStatus.OK);
     }
 
     @PutMapping(value = "/{id}/passwordReset")

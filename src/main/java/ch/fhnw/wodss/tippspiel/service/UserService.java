@@ -1,6 +1,8 @@
 package ch.fhnw.wodss.tippspiel.service;
 
 import ch.fhnw.wodss.tippspiel.domain.Bet;
+import ch.fhnw.wodss.tippspiel.dto.RestUserDTO;
+import ch.fhnw.wodss.tippspiel.dto.UserDTO;
 import ch.fhnw.wodss.tippspiel.dto.UserRankingDTO;
 import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
@@ -40,8 +42,13 @@ public class UserService {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public List<User> getAllUsers() {
-        return repository.findAll();
+    public List<UserDTO> getAllUsers() {
+        List<User> users = repository.findAll();
+        List<UserDTO> userDTOS = new ArrayList<>();
+        for (User user : users) {
+            userDTOS.add(convertUserToUserDTO(user));
+        }
+        return userDTOS;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -52,26 +59,35 @@ public class UserService {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public User getUserById(Long id) {
-        return repository.findById(id)
+    public UserDTO getUserById(Long id) {
+        User user = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Can't find a user with id: " + id));
+        return convertUserToUserDTO(user);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public User getUserByName(String name) {
-        return repository.findUserByNameEquals(name)
+    public UserDTO getUserByName(String name) {
+        User user = repository.findUserByNameEquals(name)
                 .orElseThrow(() -> new ResourceNotFoundException("Can't find a user with name: " + name));
+        return convertUserToUserDTO(user);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public User addUser(User user) {
-        if (repository.findUserByNameEquals(user.getName()).isPresent()) {
-            throw new IllegalActionException("User with name: " + user.getName() + " already exists");
+    public UserDTO addUser(RestUserDTO restUserDTO) {
+        if (repository.findUserByNameEquals(restUserDTO.getName()).isPresent()) {
+            throw new IllegalActionException("User with name: " + restUserDTO.getName() + " already exists");
         }
-        if (repository.findUserByEmailEquals(user.getEmail()).isPresent()) {
-            throw new IllegalActionException("User with email: " + user.getEmail() + " already exists");
+        if (repository.findUserByEmailEquals(restUserDTO.getEmail()).isPresent()) {
+            throw new IllegalActionException("User with email: " + restUserDTO.getEmail() + " already exists");
         }
-        return repository.save(user);
+        User user = new User();
+        user.setName(restUserDTO.getName());
+        user.setEmail(restUserDTO.getEmail());
+        user.setPassword(restUserDTO.getPassword());
+        user.setReminders(restUserDTO.isReminders());
+        user.setDailyResults(restUserDTO.isDailyResults());
+        user = repository.save(user);
+        return convertUserToUserDTO(user);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
@@ -84,11 +100,12 @@ public class UserService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public User changeEmail(Long id, User user) {
+    public UserDTO changeEmail(Long id, RestUserDTO restUserDTO) {
         Optional<User> userToUpdate = repository.findById(id);
         if (userToUpdate.isPresent()) {
-            userToUpdate.get().setEmail(user.getEmail());
-            return repository.save(userToUpdate.get());
+            userToUpdate.get().setEmail(restUserDTO.getEmail());
+            User user = repository.save(userToUpdate.get());
+            return convertUserToUserDTO(user);
         } else {
             throw new ResourceNotFoundException("Can't find the given user to change the email address.");
         }
@@ -111,5 +128,18 @@ public class UserService {
         // Todo with email integration
     }
 
+    private UserDTO convertUserToUserDTO(User user) {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(user.getId());
+        userDTO.setBets(user.getBets());
+        userDTO.setBetGroups(user.getBetGroups());
+        userDTO.setName(user.getName());
+        userDTO.setPassword(user.getPassword());
+        userDTO.setEmail(user.getEmail());
+        userDTO.setReminders(user.isReminders());
+        userDTO.setDailyResults(user.isDailyResults());
+        userDTO.setRole(user.getRoles());
+        return new UserDTO();
+    }
 
 }
