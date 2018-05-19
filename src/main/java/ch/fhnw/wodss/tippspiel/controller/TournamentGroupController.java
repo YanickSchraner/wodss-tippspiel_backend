@@ -1,6 +1,7 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
 import ch.fhnw.wodss.tippspiel.domain.TournamentGroup;
+import ch.fhnw.wodss.tippspiel.dto.TournamentGroupDTO;
 import ch.fhnw.wodss.tippspiel.service.TournamentGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -30,23 +31,23 @@ public class TournamentGroupController {
 
     @GetMapping(produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<TournamentGroup>> getAllTournamentGroups() {
+    public ResponseEntity<List<TournamentGroupDTO>> getAllTournamentGroups() {
         return new ResponseEntity<>(service.getAllTournamentGroups(), HttpStatus.OK);
     }
 
     @Cacheable(value = "tournamentGroups", key = "#id", unless = "#result.statusCode != 200")
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<TournamentGroup> getTournamentGroupById(@PathVariable Long id) {
-        TournamentGroup group = service.getTournamentGroupById(id);
+    public ResponseEntity<TournamentGroupDTO> getTournamentGroupById(@PathVariable Long id) {
+        TournamentGroupDTO group = service.getTournamentGroupById(id);
         return new ResponseEntity<>(group, HttpStatus.OK);
     }
 
     @Cacheable(value = "tournamentGroupsName", key = "#name", unless = "#result.statusCode != 200")
     @GetMapping(value = "/name/{name}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<TournamentGroup> getTournamentGroupByName(@PathVariable String name) {
-        TournamentGroup group = service.getTournamentGroupByName(name);
+    public ResponseEntity<TournamentGroupDTO> getTournamentGroupByName(@PathVariable String name) {
+        TournamentGroupDTO group = service.getTournamentGroupByName(name);
         return new ResponseEntity<>(group, HttpStatus.OK);
     }
 
@@ -56,11 +57,11 @@ public class TournamentGroupController {
     })
     @PostMapping(produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TournamentGroup> createTournamentGroup(@Valid @RequestBody TournamentGroup tournamentGroup, BindingResult result) {
+    public ResponseEntity<TournamentGroupDTO> createTournamentGroup(@Valid @RequestBody TournamentGroup tournamentGroup, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        TournamentGroup newGroup = service.addTournamentGroup(tournamentGroup);
+        TournamentGroupDTO newGroup = service.addTournamentGroup(tournamentGroup);
         return new ResponseEntity<>(newGroup, HttpStatus.CREATED);
     }
 
@@ -70,11 +71,11 @@ public class TournamentGroupController {
     })
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TournamentGroup> updateTournamentGroup(@Valid @RequestBody TournamentGroup tournamentGroup, @PathVariable Long id, BindingResult result) {
+    public ResponseEntity<TournamentGroupDTO> updateTournamentGroup(@Valid @RequestBody TournamentGroup tournamentGroup, @PathVariable Long id, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        TournamentGroup newGroup = service.updateTournamentGroup(id, tournamentGroup);
+        TournamentGroupDTO newGroup = service.updateTournamentGroup(id, tournamentGroup);
         return new ResponseEntity<>(newGroup, HttpStatus.OK);
     }
 

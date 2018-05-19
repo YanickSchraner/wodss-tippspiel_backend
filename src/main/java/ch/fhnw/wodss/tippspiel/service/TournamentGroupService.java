@@ -1,6 +1,9 @@
 package ch.fhnw.wodss.tippspiel.service;
 
+import ch.fhnw.wodss.tippspiel.domain.Bet;
 import ch.fhnw.wodss.tippspiel.domain.TournamentGroup;
+import ch.fhnw.wodss.tippspiel.dto.BetDTO;
+import ch.fhnw.wodss.tippspiel.dto.TournamentGroupDTO;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.persistance.TournamentGroupRepository;
@@ -11,6 +14,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,35 +31,44 @@ public class TournamentGroupService {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public List<TournamentGroup> getAllTournamentGroups() {
-        return tournamentGroupRepository.findAll();
+    public List<TournamentGroupDTO> getAllTournamentGroups() {
+        List<TournamentGroup> tournamentGroups = tournamentGroupRepository.findAll();
+        List<TournamentGroupDTO> tournamentGroupDTOS = new ArrayList<>();
+        for (TournamentGroup tournamentGroup : tournamentGroups) {
+            tournamentGroupDTOS.add(convertTournementGroupToTournementGroupDTO(tournamentGroup));
+        }
+        return tournamentGroupDTOS;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public TournamentGroup getTournamentGroupById(Long id) {
-        return tournamentGroupRepository.findById(id)
+    public TournamentGroupDTO getTournamentGroupById(Long id) {
+        TournamentGroup tournamentGroup = tournamentGroupRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Can't find a tournament group with id: " + id));
+        return convertTournementGroupToTournementGroupDTO(tournamentGroup);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public TournamentGroup getTournamentGroupByName(String name) {
-        return tournamentGroupRepository.findByNameEquals(name)
+    public TournamentGroupDTO getTournamentGroupByName(String name) {
+        TournamentGroup tournamentGroup = tournamentGroupRepository.findByNameEquals(name)
                 .orElseThrow(() -> new ResourceNotFoundException("Can't find a tournament group with name: " + name));
+        return convertTournementGroupToTournementGroupDTO(tournamentGroup);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public TournamentGroup addTournamentGroup(TournamentGroup tournamentGroup) {
+    public TournamentGroupDTO addTournamentGroup(TournamentGroup tournamentGroup) {
         if (tournamentGroupRepository.findByNameEquals(tournamentGroup.getName()).isPresent()) {
             throw new IllegalActionException("A tournament group with name: " + tournamentGroup.getName() + " already exists.");
         }
-        return tournamentGroupRepository.save(tournamentGroup);
+        tournamentGroupRepository.save(tournamentGroup);
+        return convertTournementGroupToTournementGroupDTO(tournamentGroup);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public TournamentGroup updateTournamentGroup(Long id, TournamentGroup tournamentGroup) {
+    public TournamentGroupDTO updateTournamentGroup(Long id, TournamentGroup tournamentGroup) {
         if (tournamentGroupRepository.existsById(id)) {
             tournamentGroup.setId(id);
-            return tournamentGroupRepository.save(tournamentGroup);
+            tournamentGroupRepository.save(tournamentGroup);
+            return convertTournementGroupToTournementGroupDTO(tournamentGroup);
         }
         throw new ResourceNotFoundException("Can't find a tournament group with id: " + id);
     }
@@ -70,6 +83,12 @@ public class TournamentGroupService {
         } else {
             throw new ResourceNotFoundException("Can't find a tournament group with id: " + id);
         }
+    }
 
+    private TournamentGroupDTO convertTournementGroupToTournementGroupDTO(TournamentGroup tournamentGroup) {
+        TournamentGroupDTO tournamentGroupDTO = new TournamentGroupDTO();
+        tournamentGroupDTO.setId(tournamentGroup.getId());
+        tournamentGroupDTO.setName(tournamentGroup.getName());
+        return new TournamentGroupDTO();
     }
 }
