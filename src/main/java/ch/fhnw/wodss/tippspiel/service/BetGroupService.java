@@ -2,6 +2,7 @@ package ch.fhnw.wodss.tippspiel.service;
 
 import ch.fhnw.wodss.tippspiel.domain.Bet;
 import ch.fhnw.wodss.tippspiel.dto.BetGroupDTO;
+import ch.fhnw.wodss.tippspiel.dto.RestBetGroupDTO;
 import ch.fhnw.wodss.tippspiel.dto.UserAllBetGroupDTO;
 import ch.fhnw.wodss.tippspiel.domain.BetGroup;
 import ch.fhnw.wodss.tippspiel.domain.User;
@@ -9,6 +10,7 @@ import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.persistance.BetGroupRepository;
 import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
+import ch.fhnw.wodss.tippspiel.security.Argon2PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -17,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
@@ -24,6 +28,14 @@ public class BetGroupService {
 
     private final BetGroupRepository betGroupRepository;
     private final UserRepository userRepository;
+    private final Argon2PasswordEncoder argon2PasswordEncoder;
+
+    @Autowired
+    public BetGroupService(BetGroupRepository betGroupRepository, UserRepository userRepository, Argon2PasswordEncoder argon2PasswordEncoder) {
+        this.betGroupRepository = betGroupRepository;
+        this.userRepository = userRepository;
+        this.argon2PasswordEncoder = argon2PasswordEncoder;
+    }
 
     private List<UserAllBetGroupDTO> createAllUsersInBetGroupDTOList(List<User> users) {
         List<UserAllBetGroupDTO> dtos = new ArrayList<>();
@@ -40,19 +52,9 @@ public class BetGroupService {
     private List<BetGroupDTO> createAllBetGroupDTOList(List<BetGroup> betGroups) {
         List<BetGroupDTO> dtos = new ArrayList<>();
         for (BetGroup betGroup : betGroups) {
-            BetGroupDTO dto = new BetGroupDTO();
-            dto.setId(betGroup.getId());
-            dto.setName(betGroup.getName());
-            dto.setScore(betGroup.getScore());
-            dto.setMembers(betGroup.getMembers());
+            dtos.add(convertBetGroupToBetGroupDTO(betGroup));
         }
         return dtos;
-    }
-
-    @Autowired
-    public BetGroupService(BetGroupRepository betGroupRepository, UserRepository userRepository) {
-        this.betGroupRepository = betGroupRepository;
-        this.userRepository = userRepository;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -68,19 +70,21 @@ public class BetGroupService {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public BetGroup getBetGroupById(Long id) {
-        return betGroupRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find bet group with id: " + id));
+    public BetGroupDTO getBetGroupById(Long id) {
+        BetGroup betGroup = betGroupRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Can't find a bet group with id: " + id));
+        return convertBetGroupToBetGroupDTO(betGroup);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public BetGroup getBetGroupByName(String name) {
-        return betGroupRepository.findBetGroupByNameEquals(name)
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find bet group with name: " + name));
+    public BetGroupDTO getBetGroupByName(String name) {
+        BetGroup betGroup = betGroupRepository.findBetGroupByNameEquals(name)
+                .orElseThrow(() -> new ResourceNotFoundException("Can't find a bet group with name: " + name));
+        return convertBetGroupToBetGroupDTO(betGroup);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public BetGroup addUser(Long betGroupId, User user) {
+    public BetGroupDTO addUser(Long betGroupId, User user) {
         userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find given user."));
         BetGroup betGroup = betGroupRepository.findById(betGroupId)
@@ -91,27 +95,37 @@ public class BetGroupService {
             users.add(user);
             betGroup.setMembers(users);
             betGroup.setId(betGroupId);
-            return betGroupRepository.save(betGroup);
+            betGroupRepository.save(betGroup);
+            return convertBetGroupToBetGroupDTO(betGroup);
         } else {
             throw new IllegalActionException("User with name: " + user.getName() + " is already part of the given bet group.");
         }
     }
 
-    // Todo
     @Transactional(propagation = Propagation.REQUIRED)
-    public BetGroup removeUser(Long betGroupId, User user) {
-        return null;
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED)
-    public BetGroup createBetGroup(BetGroup betGroup) {
-        if (betGroupRepository.findBetGroupByNameEquals(betGroup.getName()).isPresent()) {
-            throw new IllegalActionException("A bet group with name: " + betGroup.getName() + " already exists.");
+    public void removeUserFromBetGroup(Long betGroupId, User user) {
+        userRepository.findById(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find given user."));
+        betGroupRepository.findById(betGroupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find bet group with id: " + betGroupId));
+        boolean containsUser = betGroupRepository.existsBetGroupsByMembersContaining(user.getId());
+        if (containsUser) {
+            deleteBetGroup(betGroupId);
         }
-        return betGroupRepository.save(betGroup);
     }
 
-    // Todo make private if we disable the deletion of a whole group
+    @Transactional(propagation = Propagation.REQUIRED)
+    public BetGroupDTO createBetGroup(RestBetGroupDTO restBetGroupDTO) {
+        if (betGroupRepository.findBetGroupByNameEquals(restBetGroupDTO.getName()).isPresent()) {
+            throw new IllegalActionException("A bet group with name: " + restBetGroupDTO.getName() + " already exists.");
+        }
+        BetGroup betGroup = new BetGroup();
+        betGroup.setName(restBetGroupDTO.getName());
+        betGroup.setPassword(argon2PasswordEncoder.encode(restBetGroupDTO.getPassword()));
+        betGroup = betGroupRepository.save(betGroup);
+        return convertBetGroupToBetGroupDTO(betGroup);
+    }
+
     @Transactional(propagation = Propagation.REQUIRED)
     public void deleteBetGroup(Long id) {
         if (betGroupRepository.hasMembers(id)) {
@@ -124,5 +138,13 @@ public class BetGroupService {
         }
     }
 
+    protected BetGroupDTO convertBetGroupToBetGroupDTO(BetGroup betGroup) {
+        BetGroupDTO betGroupDTO = new BetGroupDTO();
+        betGroupDTO.setId(betGroup.getId());
+        betGroupDTO.setName(betGroup.getName());
+        betGroupDTO.setScore(betGroup.getScore());
+        betGroupDTO.setUserIds(betGroup.getMembers().stream().map(User::getId).collect(Collectors.toList()));
+        return new BetGroupDTO();
+    }
 
 }

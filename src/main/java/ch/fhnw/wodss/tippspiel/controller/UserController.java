@@ -1,7 +1,11 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
 import ch.fhnw.wodss.tippspiel.domain.User;
+import ch.fhnw.wodss.tippspiel.dto.BetDTO;
+import ch.fhnw.wodss.tippspiel.dto.RestUserDTO;
+import ch.fhnw.wodss.tippspiel.dto.UserDTO;
 import ch.fhnw.wodss.tippspiel.dto.UserRankingDTO;
+import ch.fhnw.wodss.tippspiel.service.BetService;
 import ch.fhnw.wodss.tippspiel.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -19,24 +23,27 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users")
-//@PreAuthorize("hasRole('USER')")
+@PreAuthorize("hasRole('USER')")
 public class UserController {
 
     private final UserService service;
+    private final BetService betService;
 
     @Autowired
-    public UserController(UserService service) {
+    public UserController(UserService service, BetService betService) {
         this.service = service;
+        this.betService = betService;
     }
 
+    @PreAuthorize("hasRole('USER')")
     @RequestMapping(value = "/self", method = RequestMethod.GET)
-    public ResponseEntity<User> getLogedInUser(@AuthenticationPrincipal User user) {
+    public ResponseEntity<User> getLoggedInUser(@AuthenticationPrincipal User user) {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping(produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
         return new ResponseEntity<>(service.getAllUsers(), HttpStatus.OK);
     }
 
@@ -49,58 +56,63 @@ public class UserController {
     @Cacheable(value = "users", key = "#id", unless = "#result.statusCode != 200")
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        User user = service.getUserById(id);
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+        UserDTO user = service.getUserById(id);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping(value = "/name/{name}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<User> getUserByName(@PathVariable String name) {
-        User user = service.getUserByName(name);
+    public ResponseEntity<UserDTO> getUserByName(@PathVariable String name) {
+        UserDTO user = service.getUserByName(name);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @CachePut(value = "users", key = "#user.id", unless = "result.statusCode != 201")
     @PostMapping(produces = "application/json", consumes = "application/json")
-    public ResponseEntity<User> addUser(@Valid @RequestBody User user, BindingResult result) {
+    public ResponseEntity<UserDTO> addUser(@Valid @RequestBody RestUserDTO restUserDTO, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        User newUser = service.addUser(user);
+        UserDTO newUser = service.addUser(restUserDTO);
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
-    @CachePut(value = "users", key = "#id", unless = "#result.statusCode != 200")
-    @PutMapping(value = "/{id}/email", consumes = "application/json", produces = "application/json")
+    @PutMapping(value = "/email", consumes = "application/json", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<User> updateUserEmail(@Valid @RequestBody User user, @PathVariable Long id, BindingResult result) {
+    public ResponseEntity<UserDTO> updateUserEmail(@Valid @RequestBody RestUserDTO restUserDTO, @AuthenticationPrincipal User user, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        User newUser = service.changeEmail(id, user);
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        UserDTO newUser = service.changeEmail(user, restUserDTO);
+        return new ResponseEntity<>(newUser, HttpStatus.OK);
     }
 
-    @PutMapping(value = "/{id}/passwordReset")
+    @PutMapping(value = "/passwordReset")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> resetUserPassword(@PathVariable Long id) {
-        service.resetPassword(id);
+    public ResponseEntity<String> resetUserPassword(@AuthenticationPrincipal User user) {
+        service.resetPassword(user);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
-    @PutMapping(value = "/{id}/passwordChange", consumes = "application/json")
+    @PutMapping(value = "/passwordChange", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> changeUserPassword(@RequestParam("old") String oldPassword, @RequestParam("new") String newPassword, @PathVariable Long id, BindingResult result) {
-        service.changePassword(id, oldPassword, newPassword);
+    public ResponseEntity<String> changeUserPassword(@RequestParam("old") String oldPassword, @RequestParam("new") String newPassword, @AuthenticationPrincipal User user, BindingResult result) {
+        service.changePassword(user, oldPassword, newPassword);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
     @CacheEvict(value = "users", key = "#id")
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        service.deleteUser(id);
+    public ResponseEntity<String> deleteUser(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        service.deleteUser(id, user);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @GetMapping(value = "/bets", produces = "application/json")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<BetDTO>> getBetsForUser(@AuthenticationPrincipal User user) {
+        return new ResponseEntity<>(betService.getBetsForUser(user), HttpStatus.OK);
+    }
+
 }

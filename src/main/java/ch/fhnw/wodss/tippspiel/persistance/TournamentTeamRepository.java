@@ -15,5 +15,4 @@ public interface TournamentTeamRepository extends JpaRepository<TournamentTeam, 
 
     @Query("SELECT count(game) FROM Game game WHERE game.homeTeam.id = :id OR game.awayTeam.id = :id")
     boolean hasGames(@Param("id") Long id);
-
 }

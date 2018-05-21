@@ -1,28 +1,24 @@
 package ch.fhnw.wodss.tippspiel.dto;
 
-import ch.fhnw.wodss.tippspiel.domain.User;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
-@JsonAutoDetect
 @Data
+@JsonAutoDetect
 @NoArgsConstructor
-public class BetGroupDTO {
-
-    @JsonProperty("id")
-    private Long id;
+public class RestTournamentTeamDTO {
 
     @JsonProperty("name")
+    @NotNull
     private String name;
-
-    @JsonProperty("score")
-    private int score;
-
-    @JsonProperty("user_ids")
-    private List<Long> userIds;
+    @JsonProperty("tournamentGroup_id")
+    @NotNull
+    @Min(0)
+    private long tournamentGroupId;
 
 }

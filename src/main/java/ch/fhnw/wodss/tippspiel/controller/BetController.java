@@ -1,7 +1,8 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
-import ch.fhnw.wodss.tippspiel.domain.Bet;
 import ch.fhnw.wodss.tippspiel.domain.User;
+import ch.fhnw.wodss.tippspiel.dto.BetDTO;
+import ch.fhnw.wodss.tippspiel.dto.RestBetDTO;
 import ch.fhnw.wodss.tippspiel.service.BetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/bets")
@@ -27,27 +29,27 @@ public class BetController {
 
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Bet> getBetById(@AuthenticationPrincipal User user, @PathVariable Long id) {
+    public ResponseEntity<BetDTO> getBetById(@AuthenticationPrincipal User user, @PathVariable Long id) {
         return new ResponseEntity<>(service.getBetById(id, user), HttpStatus.OK);
     }
 
     @PostMapping(produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Bet> addBet(@AuthenticationPrincipal User user, @Valid @RequestBody Bet bet, BindingResult result) {
+    public ResponseEntity<BetDTO> addBet(@AuthenticationPrincipal User user, @Valid @RequestBody RestBetDTO restBetDTO, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        Bet newBet = service.addBet(bet, user);
+        BetDTO newBet = service.addBet(restBetDTO, user);
         return new ResponseEntity<>(newBet, HttpStatus.CREATED);
     }
 
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Bet> updateBet(@AuthenticationPrincipal User user, @Valid @RequestBody Bet bet, @PathVariable Long id, BindingResult result) {
+    public ResponseEntity<BetDTO> updateBet(@AuthenticationPrincipal User user, @Valid @RequestBody RestBetDTO restBetDTO, @PathVariable Long id, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        Bet newBet = service.updateBet(id, bet, user);
+        BetDTO newBet = service.updateBet(id, restBetDTO, user);
         return new ResponseEntity<>(newBet, HttpStatus.OK);
     }
 
@@ -57,4 +59,5 @@ public class BetController {
         service.deleteBet(id, user);
         return new ResponseEntity<>("Bet deleted", HttpStatus.OK);
     }
+
 }

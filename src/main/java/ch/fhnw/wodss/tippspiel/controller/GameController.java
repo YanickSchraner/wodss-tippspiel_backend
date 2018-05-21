@@ -1,6 +1,8 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
 import ch.fhnw.wodss.tippspiel.domain.Game;
+import ch.fhnw.wodss.tippspiel.dto.GameDTO;
+import ch.fhnw.wodss.tippspiel.dto.RestGameDTO;
 import ch.fhnw.wodss.tippspiel.service.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -29,31 +31,31 @@ public class GameController {
 
     @GetMapping(produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<Game>> getAllGames() {
+    public ResponseEntity<List<GameDTO>> getAllGames() {
         return new ResponseEntity<>(service.getAllGames(), HttpStatus.OK);
     }
 
     @Cacheable(value = "games", key = "#id", unless = "#result.statusCode != 200")
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Game> getGameById(@PathVariable Long id) {
-        Game game = service.getGameById(id);
+    public ResponseEntity<GameDTO> getGameById(@PathVariable Long id) {
+        GameDTO game = service.getGameById(id);
         return new ResponseEntity<>(game, HttpStatus.OK);
     }
 
     @CachePut(value = "games", key = "#game.id", unless = "#result.statusCode != 201")
     @PostMapping(produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Game> addGame(@Valid @RequestBody Game game, BindingResult result) {
-        Game newGame = service.addGame(game);
+    public ResponseEntity<GameDTO> addGame(@Valid @RequestBody RestGameDTO restGameDTO, BindingResult result) {
+        GameDTO newGame = service.addGame(restGameDTO);
         return new ResponseEntity<>(newGame, HttpStatus.CREATED);
     }
 
     @CachePut(value = "games", key = "#id", unless = "#result.statusCode != 200")
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Game> updateGame(@Valid @RequestBody Game newGame, BindingResult result, @PathVariable Long id) {
-        Game game = service.updateGame(id, newGame);
+    public ResponseEntity<GameDTO> updateGame(@Valid @RequestBody RestGameDTO restGameDTO, BindingResult result, @PathVariable Long id) {
+        GameDTO game = service.updateGame(id, restGameDTO);
         return new ResponseEntity<>(game, HttpStatus.OK);
     }
 

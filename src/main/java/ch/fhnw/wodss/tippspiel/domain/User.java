@@ -27,7 +27,7 @@ public class User implements UserDetails {
     @NotNull
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_group", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "betgroup_id"))
-    List<BetGroup> betGroup;
+    List<BetGroup> betGroups;
     @Id
     @GeneratedValue
     @Column
@@ -54,12 +54,12 @@ public class User implements UserDetails {
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
-    public User(String name, String password, String email, List<Bet> bets, List<BetGroup> betGroup, boolean reminders, boolean dailyResults, Set<Role> roles) {
+    public User(String name, String password, String email, List<Bet> bets, List<BetGroup> betGroups, boolean reminders, boolean dailyResults, Set<Role> roles) {
         this.name = name;
         this.password = password;
         this.email = email;
         this.bets = bets;
-        this.betGroup = betGroup;
+        this.betGroups = betGroups;
         this.reminders = reminders;
         this.dailyResults = dailyResults;
         this.roles = roles;
