@@ -125,8 +125,8 @@ public class BetService {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public List<BetDTO> getBetsForUser(Long userId, User user) {
-        List<Bet> bets = betRepository.getBetsForUser(userId);
+    public List<BetDTO> getBetsForUser(User user) {
+        List<Bet> bets = betRepository.getBetsForUser(user.getId());
         List<BetDTO> betsDTO = new ArrayList<>();
         for (Bet bet : bets) {
             betsDTO.add(convertBetToBetDTO(bet));

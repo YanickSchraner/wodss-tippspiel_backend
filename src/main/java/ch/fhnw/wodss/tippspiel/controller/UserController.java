@@ -1,9 +1,11 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
 import ch.fhnw.wodss.tippspiel.domain.User;
+import ch.fhnw.wodss.tippspiel.dto.BetDTO;
 import ch.fhnw.wodss.tippspiel.dto.RestUserDTO;
 import ch.fhnw.wodss.tippspiel.dto.UserDTO;
 import ch.fhnw.wodss.tippspiel.dto.UserRankingDTO;
+import ch.fhnw.wodss.tippspiel.service.BetService;
 import ch.fhnw.wodss.tippspiel.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -25,10 +27,12 @@ import java.util.List;
 public class UserController {
 
     private final UserService service;
+    private final BetService betService;
 
     @Autowired
-    public UserController(UserService service) {
+    public UserController(UserService service, BetService betService) {
         this.service = service;
+        this.betService = betService;
     }
 
     @RequestMapping(value = "/self", method = RequestMethod.GET)
@@ -105,4 +109,11 @@ public class UserController {
         service.deleteUser(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @GetMapping(value = "/bets", produces = "application/json")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<BetDTO>> getBetsForUser(@AuthenticationPrincipal User user) {
+        return new ResponseEntity<>(betService.getBetsForUser(user), HttpStatus.OK);
+    }
+
 }
