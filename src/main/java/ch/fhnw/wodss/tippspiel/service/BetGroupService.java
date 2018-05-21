@@ -70,19 +70,21 @@ public class BetGroupService {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public BetGroup getBetGroupById(Long id) {
-        return betGroupRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find bet group with id: " + id));
+    public BetGroupDTO getBetGroupById(Long id) {
+        BetGroup betGroup = betGroupRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Can't find a bet group with id: " + id));
+        return convertBetGroupToBetGroupDTO(betGroup);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public BetGroup getBetGroupByName(String name) {
-        return betGroupRepository.findBetGroupByNameEquals(name)
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find bet group with name: " + name));
+    public BetGroupDTO getBetGroupByName(String name) {
+        BetGroup betGroup = betGroupRepository.findBetGroupByNameEquals(name)
+                .orElseThrow(() -> new ResourceNotFoundException("Can't find a bet group with name: " + name));
+        return convertBetGroupToBetGroupDTO(betGroup);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public BetGroup addUser(Long betGroupId, User user) {
+    public BetGroupDTO addUser(Long betGroupId, User user) {
         userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find given user."));
         BetGroup betGroup = betGroupRepository.findById(betGroupId)
@@ -93,7 +95,8 @@ public class BetGroupService {
             users.add(user);
             betGroup.setMembers(users);
             betGroup.setId(betGroupId);
-            return betGroupRepository.save(betGroup);
+            betGroupRepository.save(betGroup);
+            return convertBetGroupToBetGroupDTO(betGroup);
         } else {
             throw new IllegalActionException("User with name: " + user.getName() + " is already part of the given bet group.");
         }
@@ -135,7 +138,7 @@ public class BetGroupService {
         }
     }
 
-    private BetGroupDTO convertBetGroupToBetGroupDTO(BetGroup betGroup) {
+    protected BetGroupDTO convertBetGroupToBetGroupDTO(BetGroup betGroup) {
         BetGroupDTO betGroupDTO = new BetGroupDTO();
         betGroupDTO.setId(betGroup.getId());
         betGroupDTO.setName(betGroup.getName());

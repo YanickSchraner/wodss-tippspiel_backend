@@ -14,6 +14,7 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,16 +49,16 @@ public class BetGroupController {
     @Cacheable(value = "betGroups", key = "#id", unless = "#result.statusCode != 200")
     @GetMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BetGroup> getBetGroupById(@PathVariable Long id) {
-        BetGroup betGroup = service.getBetGroupById(id);
+    public ResponseEntity<BetGroupDTO> getBetGroupById(@PathVariable Long id) {
+        BetGroupDTO betGroup = service.getBetGroupById(id);
         return new ResponseEntity<>(betGroup, HttpStatus.OK);
     }
 
     @Cacheable(value = "betGroupsName", key = "#name", unless = "#result.statusCode != 200")
     @GetMapping(value = "/name/{name}", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BetGroup> getBetGroupByName(@PathVariable String name) {
-        BetGroup betGroup = service.getBetGroupByName(name);
+    public ResponseEntity<BetGroupDTO> getBetGroupByName(@PathVariable String name) {
+        BetGroupDTO betGroup = service.getBetGroupByName(name);
         return new ResponseEntity<>(betGroup, HttpStatus.OK);
     }
 
@@ -81,11 +82,11 @@ public class BetGroupController {
     })
     @PutMapping(value = "/{id}/addUser", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BetGroup> addUserToBetGroup(@PathVariable Long id, @Valid @RequestBody User user, BindingResult result) {
+    public ResponseEntity<BetGroupDTO> addUserToBetGroup(@PathVariable Long id, @AuthenticationPrincipal User user, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        BetGroup betGroup = service.addUser(id, user);
+        BetGroupDTO betGroup = service.addUser(id, user);
         return new ResponseEntity<>(betGroup, HttpStatus.CREATED);
     }
 
@@ -95,7 +96,7 @@ public class BetGroupController {
     })
     @PutMapping(value = "/{id}/removeUser", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> removeUserFromBetGroup(@PathVariable Long id, @Valid @RequestBody User user, BindingResult result) {
+    public ResponseEntity<String> removeUserFromBetGroup(@PathVariable Long id, @AuthenticationPrincipal User user, BindingResult result) {
         service.removeUserFromBetGroup(id, user);
         return new ResponseEntity<>("User from bet group removed", HttpStatus.OK);
 

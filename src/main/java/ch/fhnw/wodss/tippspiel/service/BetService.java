@@ -134,7 +134,7 @@ public class BetService {
         return betsDTO;
     }
 
-    private BetDTO convertBetToBetDTO(Bet bet) {
+    protected BetDTO convertBetToBetDTO(Bet bet) {
         BetDTO betDTO = new BetDTO();
         betDTO.setId(bet.getId());
         betDTO.setUserId(bet.getUser().getId());
