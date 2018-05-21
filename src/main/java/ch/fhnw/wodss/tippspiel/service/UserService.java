@@ -1,9 +1,8 @@
 package ch.fhnw.wodss.tippspiel.service;
 
 import ch.fhnw.wodss.tippspiel.domain.Bet;
-import ch.fhnw.wodss.tippspiel.dto.RestUserDTO;
-import ch.fhnw.wodss.tippspiel.dto.UserDTO;
-import ch.fhnw.wodss.tippspiel.dto.UserRankingDTO;
+import ch.fhnw.wodss.tippspiel.domain.BetGroup;
+import ch.fhnw.wodss.tippspiel.dto.*;
 import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
@@ -18,12 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
 public class UserService {
 
     private final UserRepository repository;
+    private final BetService betService;
+    private final BetGroupService betGroupService;
 
     private List<UserRankingDTO> createAllUsersForRankingDTOList(List<User> users) {
         List<UserRankingDTO> dtos = new ArrayList<>();
@@ -37,8 +39,10 @@ public class UserService {
     }
 
     @Autowired
-    public UserService(UserRepository repository) {
+    public UserService(UserRepository repository, BetGroupService betGroupService, BetService betService) {
         this.repository = repository;
+        this.betGroupService = betGroupService;
+        this.betService = betService;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -131,8 +135,10 @@ public class UserService {
     private UserDTO convertUserToUserDTO(User user) {
         UserDTO userDTO = new UserDTO();
         userDTO.setId(user.getId());
-        userDTO.setBets(user.getBets());
-        userDTO.setBetGroups(user.getBetGroups());
+        List<BetDTO> betDTOs = user.getBets().stream().map(betService::convertBetToBetDTO).collect(Collectors.toList());
+        List<BetGroupDTO> betGroupDTOs = user.getBetGroups().stream().map(betGroupService::convertBetGroupToBetGroupDTO).collect(Collectors.toList());
+        userDTO.setBets(betDTOs);
+        userDTO.setBetGroups(betGroupDTOs);
         userDTO.setName(user.getName());
         userDTO.setPassword(user.getPassword());
         userDTO.setEmail(user.getEmail());

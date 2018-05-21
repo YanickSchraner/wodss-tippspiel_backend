@@ -19,9 +19,9 @@ public class UserDTO {
     @JsonProperty("id")
     private long id;
     @JsonProperty("bets")
-    private List<Bet> bets;
+    private List<BetDTO> bets;
     @JsonProperty("betGroups")
-    private List<BetGroup> betGroups;
+    private List<BetGroupDTO> betGroups;
     @JsonProperty("name")
     private String name;
     @JsonProperty("password")
