@@ -1,11 +1,12 @@
 package ch.fhnw.wodss.tippspiel.service;
 
 import ch.fhnw.wodss.tippspiel.domain.Bet;
-import ch.fhnw.wodss.tippspiel.dto.UserRankingDTO;
 import ch.fhnw.wodss.tippspiel.domain.User;
+import ch.fhnw.wodss.tippspiel.dto.UserRankingDTO;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
+import ch.fhnw.wodss.tippspiel.security.Argon2PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,11 @@ public class UserService {
 
     private final UserRepository repository;
 
+    @Autowired
+    public UserService(UserRepository repository) {
+        this.repository = repository;
+    }
+
     private List<UserRankingDTO> createAllUsersForRankingDTOList(List<User> users) {
         List<UserRankingDTO> dtos = new ArrayList<>();
         for (User user : users) {
@@ -32,11 +38,6 @@ public class UserService {
             dto.setScore(user.getBets().stream().mapToInt(Bet::getScore).sum());
         }
         return dtos;
-    }
-
-    @Autowired
-    public UserService(UserRepository repository) {
-        this.repository = repository;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -96,11 +97,16 @@ public class UserService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public void changePassword(Long id, String oldPassword, String newPassword) {
-        // Todo how to do this with spring security and argon2?
+        Argon2PasswordEncoder passwordEncoder = new Argon2PasswordEncoder();
         Optional<User> userToUpdate = repository.findById(id);
         if (userToUpdate.isPresent()) {
-            userToUpdate.get().setPassword(newPassword);
-            repository.save(userToUpdate.get());
+            User user = userToUpdate.get();
+            if (passwordEncoder.matches(oldPassword, user.getPassword())) {
+                user.setPassword(passwordEncoder.encode(newPassword));
+                repository.save(user);
+            } else {
+                throw new IllegalActionException("Invalid old password entered.");
+            }
         } else {
             throw new ResourceNotFoundException("Can't find the given user to change the password.");
         }
