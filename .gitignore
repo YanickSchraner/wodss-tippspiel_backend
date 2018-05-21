@@ -148,3 +148,4 @@ fabric.properties
 # Custom
 logs/*
 logs
+/src/main/resources/client_secret_mail.json

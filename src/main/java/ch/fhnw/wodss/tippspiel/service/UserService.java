@@ -1,14 +1,12 @@
 package ch.fhnw.wodss.tippspiel.service;
 
 import ch.fhnw.wodss.tippspiel.domain.Bet;
-import ch.fhnw.wodss.tippspiel.domain.BetGroup;
-import ch.fhnw.wodss.tippspiel.dto.*;
 import ch.fhnw.wodss.tippspiel.domain.User;
+import ch.fhnw.wodss.tippspiel.dto.*;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
 import ch.fhnw.wodss.tippspiel.security.Argon2PasswordEncoder;
-import com.sun.org.apache.xpath.internal.Arg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -21,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+
 @Service
 @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
 public class UserService {
@@ -29,6 +28,14 @@ public class UserService {
     private final BetService betService;
     private final BetGroupService betGroupService;
     private final Argon2PasswordEncoder argon2PasswordEncoder;
+
+    @Autowired
+    public UserService(UserRepository repository, BetGroupService betGroupService, BetService betService, Argon2PasswordEncoder argon2PasswordEncoder) {
+        this.repository = repository;
+        this.betGroupService = betGroupService;
+        this.betService = betService;
+        this.argon2PasswordEncoder = argon2PasswordEncoder;
+    }
 
     private List<UserRankingDTO> createAllUsersForRankingDTOList(List<User> users) {
         List<UserRankingDTO> dtos = new ArrayList<>();
@@ -39,14 +46,6 @@ public class UserService {
             dto.setScore(user.getBets().stream().mapToInt(Bet::getScore).sum());
         }
         return dtos;
-    }
-
-    @Autowired
-    public UserService(UserRepository repository, BetGroupService betGroupService, BetService betService, Argon2PasswordEncoder argon2PasswordEncoder) {
-        this.repository = repository;
-        this.betGroupService = betGroupService;
-        this.betService = betService;
-        this.argon2PasswordEncoder = argon2PasswordEncoder;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
