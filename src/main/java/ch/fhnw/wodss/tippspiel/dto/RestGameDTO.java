@@ -29,5 +29,11 @@ public class RestGameDTO {
     @NotNull
     @Min(0)
     private long phaseId;
+    @JsonProperty("date")
+    @NotNull
+    private String date;
+    @JsonProperty("time")
+    @NotNull
+    private String time;
 
 }

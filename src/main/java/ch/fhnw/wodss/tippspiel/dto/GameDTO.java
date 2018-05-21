@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
+
 @Data
 @JsonAutoDetect
 @NoArgsConstructor
@@ -26,5 +28,9 @@ public class GameDTO {
     private int homeTeamGoals;
     @JsonProperty("awayTeamGoals")
     private int awayTeamGoals;
+    @JsonProperty("date")
+    private String date;
+    @JsonProperty("time")
+    private String time;
 
 }

@@ -54,8 +54,8 @@ public class GameController {
     @CachePut(value = "games", key = "#id", unless = "#result.statusCode != 200")
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Game> updateGame(@Valid @RequestBody Game newGame, BindingResult result, @PathVariable Long id) {
-        Game game = service.updateGame(id, newGame);
+    public ResponseEntity<GameDTO> updateGame(@Valid @RequestBody RestGameDTO restGameDTO, BindingResult result, @PathVariable Long id) {
+        GameDTO game = service.updateGame(id, restGameDTO);
         return new ResponseEntity<>(game, HttpStatus.OK);
     }
 

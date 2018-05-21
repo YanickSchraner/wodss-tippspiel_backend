@@ -1,13 +1,12 @@
 package ch.fhnw.wodss.tippspiel.service;
 
 import ch.fhnw.wodss.tippspiel.domain.Game;
+import ch.fhnw.wodss.tippspiel.domain.TournamentTeam;
 import ch.fhnw.wodss.tippspiel.dto.GameDTO;
 import ch.fhnw.wodss.tippspiel.dto.RestGameDTO;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
-import ch.fhnw.wodss.tippspiel.persistance.BetRepository;
-import ch.fhnw.wodss.tippspiel.persistance.GameRepository;
-import ch.fhnw.wodss.tippspiel.persistance.TournamentTeamRepository;
+import ch.fhnw.wodss.tippspiel.persistance.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -27,12 +26,16 @@ public class GameService {
     private final GameRepository gameRepository;
     private final BetRepository betRepository;
     private final TournamentTeamRepository tournamentTeamRepository;
+    private final LocationRepository locationRepository;
+    private final PhaseRepository phaseRepository;
 
     @Autowired
-    public GameService(GameRepository gameRepository, BetRepository betRepository, TournamentTeamRepository tournamentTeamRepository) {
+    public GameService(GameRepository gameRepository, BetRepository betRepository, TournamentTeamRepository tournamentTeamRepository, LocationRepository locationRepository, PhaseRepository phaseRepository) {
         this.gameRepository = gameRepository;
         this.betRepository = betRepository;
         this.tournamentTeamRepository = tournamentTeamRepository;
+        this.locationRepository = locationRepository;
+        this.phaseRepository = phaseRepository;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -55,15 +58,12 @@ public class GameService {
     @Transactional(propagation = Propagation.REQUIRED)
     public GameDTO addGame(RestGameDTO restGameDTO) {
         Game game = new Game();
-        game.getHomeTeam().setId(restGameDTO.getHomeTeamId());
-        game.getAwayTeam().setId(restGameDTO.getAwayTeamId());
-        game.getLocation().setId(restGameDTO.getLocationId());
-        game.getPhase().setId(restGameDTO.getPhaseId());
-        //TODO
-        //game.setHomeTeam(tournamentTeamRepository.findById(restGameDTO.getHomeTeamId()));
-        //game.setAwayTeam(tournamentTeamRepository.findById(restGameDTO.getAwayTeamId()));
-        //game.setLocation(tournamentTeamRepository.findById(restGameDTO.getLocationId()));
-        //game.setPhase(tournamentTeamRepository.findById(restGameDTO.getPhaseId()));
+        LocalDateTime localDateTime = LocalDateTime.parse(restGameDTO.getDate()+"T"+restGameDTO.getTime());
+        game.setDateTime(localDateTime);
+        game.setHomeTeam(tournamentTeamRepository.findById(restGameDTO.getHomeTeamId()).orElseThrow(() -> new ResourceNotFoundException("Home team with id " + restGameDTO.getHomeTeamId() + "not found!")));
+        game.setAwayTeam(tournamentTeamRepository.findById(restGameDTO.getAwayTeamId()).orElseThrow(() -> new ResourceNotFoundException("Away team with id " + restGameDTO.getAwayTeamId() + "not found!")));
+        game.setLocation(locationRepository.findById(restGameDTO.getLocationId()).orElseThrow(() -> new ResourceNotFoundException("Location with id " + restGameDTO.getLocationId() + "not found!")));
+        game.setPhase(phaseRepository.findById(restGameDTO.getPhaseId()).orElseThrow(() -> new ResourceNotFoundException("Phase with id " + restGameDTO.getPhaseId() + "not found!")));
         if (gameRepository.existsGameByHomeTeamAndAwayTeamAndDateTimeEquals(game.getHomeTeam(), game.getAwayTeam(), game.getDateTime())) {
             throw new IllegalActionException("Can't create an identical game");
         }
@@ -72,11 +72,18 @@ public class GameService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public Game updateGame(Long id, Game game) {
+    public GameDTO updateGame(Long id, RestGameDTO restGameDTO) {
         Optional<Game> oldGame = gameRepository.findById(id);
         if (oldGame.isPresent()) {
+            Game game = oldGame.get();
             game.setId(id);
-            return gameRepository.save(game);
+            game.setDateTime(LocalDateTime.parse(restGameDTO.getDate() + "T" + restGameDTO.getTime()));
+            game.setHomeTeam(tournamentTeamRepository.findById(restGameDTO.getHomeTeamId()).orElseThrow(() -> new ResourceNotFoundException("Home team with id " + restGameDTO.getHomeTeamId() + "not found!")));
+            game.setAwayTeam(tournamentTeamRepository.findById(restGameDTO.getAwayTeamId()).orElseThrow(() -> new ResourceNotFoundException("Away team with id " + restGameDTO.getAwayTeamId() + "not found!")));
+            game.setLocation(locationRepository.findById(restGameDTO.getLocationId()).orElseThrow(() -> new ResourceNotFoundException("Location with id " + restGameDTO.getLocationId() + "not found!")));
+            game.setPhase(phaseRepository.findById(restGameDTO.getPhaseId()).orElseThrow(() -> new ResourceNotFoundException("Phase with id " + restGameDTO.getPhaseId() + "not found!")));
+            gameRepository.save(game);
+            return convertGameToGameDTO(game);
         }
         throw new ResourceNotFoundException("Could not find game with id " + id + " to update.");
     }
@@ -111,6 +118,8 @@ public class GameService {
 
     private GameDTO convertGameToGameDTO(Game game) {
         GameDTO gameDTO = new GameDTO();
+        gameDTO.setTime(game.getDateTime().toLocalTime().toString());
+        gameDTO.setDate(game.getDateTime().toLocalDate().toString());
         gameDTO.setHomeTeamId(game.getHomeTeam().getId());
         gameDTO.setAwayTeamId(game.getAwayTeam().getId());
         gameDTO.setHomeTeamName(game.getHomeTeam().getName());
