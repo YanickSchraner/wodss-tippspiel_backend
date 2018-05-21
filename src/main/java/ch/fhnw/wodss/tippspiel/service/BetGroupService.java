@@ -1,12 +1,13 @@
 package ch.fhnw.wodss.tippspiel.service;
 
 import ch.fhnw.wodss.tippspiel.domain.Bet;
+import ch.fhnw.wodss.tippspiel.domain.BetGroup;
+import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.dto.BetGroupDTO;
 import ch.fhnw.wodss.tippspiel.dto.RestBetGroupDTO;
 import ch.fhnw.wodss.tippspiel.dto.UserAllBetGroupDTO;
-import ch.fhnw.wodss.tippspiel.domain.BetGroup;
-import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
+import ch.fhnw.wodss.tippspiel.exception.ResourceNotAllowedException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.persistance.BetGroupRepository;
 import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
@@ -19,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Service
@@ -84,13 +84,18 @@ public class BetGroupService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public BetGroupDTO addUser(Long betGroupId, User user) {
+    public BetGroupDTO addUser(Long betGroupId, User user, String password) {
         userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find given user."));
         BetGroup betGroup = betGroupRepository.findById(betGroupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find bet group with id: " + betGroupId));
         boolean containsUser = betGroupRepository.existsBetGroupsByMembersContaining(user.getId());
         if (!containsUser) {
+            if (betGroup.getPassword() != null && password != null) {
+                if (!argon2PasswordEncoder.matches(betGroup.getPassword(), password)) {
+                    throw new ResourceNotAllowedException("Wrong password for this bet group!");
+                }
+            }
             List<User> users = betGroup.getMembers();
             users.add(user);
             betGroup.setMembers(users);
@@ -121,7 +126,9 @@ public class BetGroupService {
         }
         BetGroup betGroup = new BetGroup();
         betGroup.setName(restBetGroupDTO.getName());
-        betGroup.setPassword(argon2PasswordEncoder.encode(restBetGroupDTO.getPassword()));
+        if (restBetGroupDTO.getName() != null) {
+            betGroup.setPassword(argon2PasswordEncoder.encode(restBetGroupDTO.getPassword()));
+        }
         betGroup = betGroupRepository.save(betGroup);
         return convertBetGroupToBetGroupDTO(betGroup);
     }

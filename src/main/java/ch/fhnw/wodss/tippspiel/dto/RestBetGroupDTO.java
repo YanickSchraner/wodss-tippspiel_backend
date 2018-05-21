@@ -16,8 +16,8 @@ public class RestBetGroupDTO {
     @JsonProperty("name")
     @NotNull
     private String name;
+
     @JsonProperty("password")
-    @NotNull
     @Size(min = 10, max = 1024)
     private String password;
 

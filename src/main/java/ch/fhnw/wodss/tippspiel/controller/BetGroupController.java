@@ -1,6 +1,5 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
-import ch.fhnw.wodss.tippspiel.domain.BetGroup;
 import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.dto.BetGroupDTO;
 import ch.fhnw.wodss.tippspiel.dto.RestBetGroupDTO;
@@ -82,11 +81,11 @@ public class BetGroupController {
     })
     @PutMapping(value = "/{id}/addUser", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BetGroupDTO> addUserToBetGroup(@PathVariable Long id, @AuthenticationPrincipal User user, BindingResult result) {
+    public ResponseEntity<BetGroupDTO> addUserToBetGroup(@PathVariable Long id, @RequestBody String password, @AuthenticationPrincipal User user, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        BetGroupDTO betGroup = service.addUser(id, user);
+        BetGroupDTO betGroup = service.addUser(id, user, password);
         return new ResponseEntity<>(betGroup, HttpStatus.CREATED);
     }
 
