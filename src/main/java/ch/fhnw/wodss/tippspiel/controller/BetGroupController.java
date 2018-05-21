@@ -62,8 +62,7 @@ public class BetGroupController {
     }
 
     @Caching(put = {
-            @CachePut(value = "betGroups", key = "#betGroup.id", unless = "#result.statusCode != 201"),
-            @CachePut(value = "betGroupsName", key = "#betGroup.name", unless = "#result.statusCode != 201")
+            @CachePut(value = "betGroupsName", key = "#restBetGroupDTO.name", unless = "#result.statusCode != 201")
     })
     @PostMapping(produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")

@@ -126,7 +126,7 @@ public class BetGroupService {
         }
         BetGroup betGroup = new BetGroup();
         betGroup.setName(restBetGroupDTO.getName());
-        if (restBetGroupDTO.getName() != null) {
+        if (restBetGroupDTO.getPassword() != null) {
             betGroup.setPassword(argon2PasswordEncoder.encode(restBetGroupDTO.getPassword()));
         }
         betGroup = betGroupRepository.save(betGroup);
@@ -149,9 +149,11 @@ public class BetGroupService {
         BetGroupDTO betGroupDTO = new BetGroupDTO();
         betGroupDTO.setId(betGroup.getId());
         betGroupDTO.setName(betGroup.getName());
-        betGroupDTO.setScore(betGroup.getScore());
-        betGroupDTO.setUserIds(betGroup.getMembers().stream().map(User::getId).collect(Collectors.toList()));
-        return new BetGroupDTO();
+        int score = betGroup.getScore() == null ? 0 : betGroup.getScore();
+        betGroupDTO.setScore(score);
+        List<Long> userIds = betGroup.getMembers() == null ? new ArrayList<>() : betGroup.getMembers().stream().map(User::getId).collect(Collectors.toList());
+        betGroupDTO.setUserIds(userIds);
+        return betGroupDTO;
     }
 
 }

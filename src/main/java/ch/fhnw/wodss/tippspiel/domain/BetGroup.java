@@ -26,7 +26,6 @@ public class BetGroup {
     private String name;
 
     @Column
-    @NotNull
     @Size(min = 10, max = 300)
     private String password;
 
