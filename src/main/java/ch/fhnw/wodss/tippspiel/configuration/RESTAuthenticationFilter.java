@@ -37,7 +37,6 @@ public class RESTAuthenticationFilter extends AbstractAuthenticationProcessingFi
 
         authRequest.setDetails(authenticationDetailsSource.buildDetails(request));
         Authentication authentication =  this.getAuthenticationManager().authenticate(authRequest);
-        System.out.print("jkwd");
         return authentication;
     }
 }
