@@ -7,6 +7,8 @@ import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
+import ch.fhnw.wodss.tippspiel.security.Argon2PasswordEncoder;
+import com.sun.org.apache.xpath.internal.Arg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class UserService {
     private final UserRepository repository;
     private final BetService betService;
     private final BetGroupService betGroupService;
+    private final Argon2PasswordEncoder argon2PasswordEncoder;
 
     private List<UserRankingDTO> createAllUsersForRankingDTOList(List<User> users) {
         List<UserRankingDTO> dtos = new ArrayList<>();
@@ -39,10 +42,11 @@ public class UserService {
     }
 
     @Autowired
-    public UserService(UserRepository repository, BetGroupService betGroupService, BetService betService) {
+    public UserService(UserRepository repository, BetGroupService betGroupService, BetService betService, Argon2PasswordEncoder argon2PasswordEncoder) {
         this.repository = repository;
         this.betGroupService = betGroupService;
         this.betService = betService;
+        this.argon2PasswordEncoder = argon2PasswordEncoder;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -95,7 +99,8 @@ public class UserService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public void deleteUser(Long id) {
+    public void deleteUser(Long id, User user) {
+        if (!id.equals(user.getId())) throw new IllegalActionException("You can't delete another user!");
         if (repository.existsById(id)) {
             repository.deleteById(id);
         } else {
@@ -104,11 +109,11 @@ public class UserService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public UserDTO changeEmail(Long id, RestUserDTO restUserDTO) {
-        Optional<User> userToUpdate = repository.findById(id);
+    public UserDTO changeEmail(User user, RestUserDTO restUserDTO) {
+        Optional<User> userToUpdate = repository.findById(user.getId());
         if (userToUpdate.isPresent()) {
             userToUpdate.get().setEmail(restUserDTO.getEmail());
-            User user = repository.save(userToUpdate.get());
+            user = repository.save(userToUpdate.get());
             return convertUserToUserDTO(user);
         } else {
             throw new ResourceNotFoundException("Can't find the given user to change the email address.");
@@ -116,11 +121,12 @@ public class UserService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public void changePassword(Long id, String oldPassword, String newPassword) {
-        // Todo how to do this with spring security and argon2?
-        Optional<User> userToUpdate = repository.findById(id);
+    public void changePassword(User user, String oldPassword, String newPassword) {
+        Optional<User> userToUpdate = repository.findById(user.getId());
         if (userToUpdate.isPresent()) {
-            userToUpdate.get().setPassword(newPassword);
+            boolean correctPW = argon2PasswordEncoder.matches(userToUpdate.get().getPassword(), argon2PasswordEncoder.encode(oldPassword));
+            if (!correctPW) throw new IllegalActionException("You entered a wrong password!");
+            userToUpdate.get().setPassword(argon2PasswordEncoder.encode(newPassword));
             repository.save(userToUpdate.get());
         } else {
             throw new ResourceNotFoundException("Can't find the given user to change the password.");
@@ -128,7 +134,7 @@ public class UserService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public void resetPassword(Long id) {
+    public void resetPassword(User user) {
         // Todo with email integration
     }
 

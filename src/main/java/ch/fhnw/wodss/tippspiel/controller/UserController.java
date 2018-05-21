@@ -23,7 +23,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users")
-//@PreAuthorize("hasRole('USER')")
+@PreAuthorize("hasRole('USER')")
 public class UserController {
 
     private final UserService service;
@@ -35,6 +35,7 @@ public class UserController {
         this.betService = betService;
     }
 
+    @PreAuthorize("hasRole('USER')")
     @RequestMapping(value = "/self", method = RequestMethod.GET)
     public ResponseEntity<User> getLoggedInUser(@AuthenticationPrincipal User user) {
         return new ResponseEntity<>(user, HttpStatus.OK);
@@ -67,7 +68,6 @@ public class UserController {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @CachePut(value = "users", key = "#user.id", unless = "result.statusCode != 201")
     @PostMapping(produces = "application/json", consumes = "application/json")
     public ResponseEntity<UserDTO> addUser(@Valid @RequestBody RestUserDTO restUserDTO, BindingResult result) {
         if (result.hasErrors()) {
@@ -77,36 +77,35 @@ public class UserController {
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
-    @CachePut(value = "users", key = "#id", unless = "#result.statusCode != 200")
-    @PutMapping(value = "/{id}/email", consumes = "application/json", produces = "application/json")
+    @PutMapping(value = "/email", consumes = "application/json", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<UserDTO> updateUserEmail(@Valid @RequestBody RestUserDTO restUserDTO, @PathVariable Long id, BindingResult result) {
+    public ResponseEntity<UserDTO> updateUserEmail(@Valid @RequestBody RestUserDTO restUserDTO, @AuthenticationPrincipal User user, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        UserDTO newUser = service.changeEmail(id, restUserDTO);
+        UserDTO newUser = service.changeEmail(user, restUserDTO);
         return new ResponseEntity<>(newUser, HttpStatus.OK);
     }
 
-    @PutMapping(value = "/{id}/passwordReset")
+    @PutMapping(value = "/passwordReset")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> resetUserPassword(@PathVariable Long id) {
-        service.resetPassword(id);
+    public ResponseEntity<String> resetUserPassword(@AuthenticationPrincipal User user) {
+        service.resetPassword(user);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
-    @PutMapping(value = "/{id}/passwordChange", consumes = "application/json")
+    @PutMapping(value = "/passwordChange", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> changeUserPassword(@RequestParam("old") String oldPassword, @RequestParam("new") String newPassword, @PathVariable Long id, BindingResult result) {
-        service.changePassword(id, oldPassword, newPassword);
+    public ResponseEntity<String> changeUserPassword(@RequestParam("old") String oldPassword, @RequestParam("new") String newPassword, @AuthenticationPrincipal User user, BindingResult result) {
+        service.changePassword(user, oldPassword, newPassword);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
     @CacheEvict(value = "users", key = "#id")
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        service.deleteUser(id);
+    public ResponseEntity<String> deleteUser(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        service.deleteUser(id, user);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
