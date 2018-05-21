@@ -10,6 +10,7 @@ import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.persistance.BetGroupRepository;
 import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
+import ch.fhnw.wodss.tippspiel.security.Argon2PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -18,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
@@ -25,6 +28,14 @@ public class BetGroupService {
 
     private final BetGroupRepository betGroupRepository;
     private final UserRepository userRepository;
+    private final Argon2PasswordEncoder argon2PasswordEncoder;
+
+    @Autowired
+    public BetGroupService(BetGroupRepository betGroupRepository, UserRepository userRepository, Argon2PasswordEncoder argon2PasswordEncoder) {
+        this.betGroupRepository = betGroupRepository;
+        this.userRepository = userRepository;
+        this.argon2PasswordEncoder = argon2PasswordEncoder;
+    }
 
     private List<UserAllBetGroupDTO> createAllUsersInBetGroupDTOList(List<User> users) {
         List<UserAllBetGroupDTO> dtos = new ArrayList<>();
@@ -41,19 +52,9 @@ public class BetGroupService {
     private List<BetGroupDTO> createAllBetGroupDTOList(List<BetGroup> betGroups) {
         List<BetGroupDTO> dtos = new ArrayList<>();
         for (BetGroup betGroup : betGroups) {
-            BetGroupDTO dto = new BetGroupDTO();
-            dto.setId(betGroup.getId());
-            dto.setName(betGroup.getName());
-            dto.setScore(betGroup.getScore());
-            dto.setMembers(betGroup.getMembers());
+            dtos.add(convertBetGroupToBetGroupDTO(betGroup));
         }
         return dtos;
-    }
-
-    @Autowired
-    public BetGroupService(BetGroupRepository betGroupRepository, UserRepository userRepository) {
-        this.betGroupRepository = betGroupRepository;
-        this.userRepository = userRepository;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -117,12 +118,11 @@ public class BetGroupService {
         }
         BetGroup betGroup = new BetGroup();
         betGroup.setName(restBetGroupDTO.getName());
-        betGroup.setPassword(restBetGroupDTO.getPassword());
+        betGroup.setPassword(argon2PasswordEncoder.encode(restBetGroupDTO.getPassword()));
         betGroup = betGroupRepository.save(betGroup);
         return convertBetGroupToBetGroupDTO(betGroup);
     }
 
-    // Todo make private if we disable the deletion of a whole group
     @Transactional(propagation = Propagation.REQUIRED)
     public void deleteBetGroup(Long id) {
         if (betGroupRepository.hasMembers(id)) {
@@ -140,7 +140,7 @@ public class BetGroupService {
         betGroupDTO.setId(betGroup.getId());
         betGroupDTO.setName(betGroup.getName());
         betGroupDTO.setScore(betGroup.getScore());
-        betGroup.setMembers(betGroup.getMembers());
+        betGroupDTO.setUserIds(betGroup.getMembers().stream().map(User::getId).collect(Collectors.toList()));
         return new BetGroupDTO();
     }
 

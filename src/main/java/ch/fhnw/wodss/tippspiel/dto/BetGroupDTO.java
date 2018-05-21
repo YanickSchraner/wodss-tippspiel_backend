@@ -22,7 +22,7 @@ public class BetGroupDTO {
     @JsonProperty("score")
     private int score;
 
-    @JsonProperty("members")
-    private List<User> members;
+    @JsonProperty("user_ids")
+    private List<Long> userIds;
 
 }
