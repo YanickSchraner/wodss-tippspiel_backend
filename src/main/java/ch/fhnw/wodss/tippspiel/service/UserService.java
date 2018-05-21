@@ -8,13 +8,13 @@ import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
 import ch.fhnw.wodss.tippspiel.security.Argon2PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,6 +44,7 @@ public class UserService {
             dto.setId(user.getId());
             dto.setName(user.getName());
             dto.setScore(user.getBets().stream().mapToInt(Bet::getScore).sum());
+            dtos.add(dto);
         }
         return dtos;
     }
@@ -60,9 +61,10 @@ public class UserService {
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<UserRankingDTO> getAllUsersForRanking() {
-        Sort sort = new Sort(Sort.Direction.ASC, "score");
-        List<User> users = repository.findAll(sort);
-        return createAllUsersForRankingDTOList(users);
+        List<User> users = repository.findAll();
+        List<UserRankingDTO> userRankingDTOs = createAllUsersForRankingDTOList(users);
+        userRankingDTOs.sort(Comparator.comparingInt(UserRankingDTO::getScore));
+        return userRankingDTOs;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
