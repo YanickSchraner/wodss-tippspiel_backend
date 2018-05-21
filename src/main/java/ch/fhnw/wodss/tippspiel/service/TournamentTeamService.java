@@ -60,20 +60,20 @@ public class TournamentTeamService {
             throw new IllegalActionException("There is already a tournament team with the name: " + restTournamentTeamDTO.getName());
         }
         TournamentTeam tournamentTeam = new TournamentTeam();
+        tournamentTeam.setGroup(tournamentGroupRepository.findById(restTournamentTeamDTO.getTournamentGroupId()).orElseThrow(() -> new ResourceNotFoundException("Tournament group with id " + restTournamentTeamDTO.getTournamentGroupId() + " not found!")));
         tournamentTeam.setName(restTournamentTeamDTO.getName());
-        //TODO
-        //TournamentGroup tournamentGroup = tournamentGroupRepository.findById(restTournamentTeamDTO.getTournamentGroupId());
-        //set
+        repository.save(tournamentTeam);
         return convertTournamentTeamToTournamanetTeamDTO(tournamentTeam);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public TournamentTeam updateTournamentTeam(Long id, TournamentTeam tournamentTeam) {
-        if (repository.existsById(id)) {
-            tournamentTeam.setId(id);
-            return repository.save(tournamentTeam);
-        }
-        throw new ResourceNotFoundException("Can't find a tournament team with id: " + id + " to update.");
+    public TournamentTeamDTO updateTournamentTeam(Long id, RestTournamentTeamDTO restTournamentTeamDTO) {
+        TournamentTeam tournamentTeam = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No tournament team with id " + id + " exists!"));
+        tournamentTeam.setId(id);
+        tournamentTeam.setGroup(tournamentGroupRepository.findById(restTournamentTeamDTO.getTournamentGroupId()).orElseThrow(() -> new ResourceNotFoundException("Tournament group with id " + restTournamentTeamDTO.getTournamentGroupId() + " not found!")));
+        tournamentTeam.setName(restTournamentTeamDTO.getName());
+        repository.save(tournamentTeam);
+        return convertTournamentTeamToTournamanetTeamDTO(tournamentTeam);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)

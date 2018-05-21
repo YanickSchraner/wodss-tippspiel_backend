@@ -1,6 +1,7 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
 import ch.fhnw.wodss.tippspiel.domain.TournamentGroup;
+import ch.fhnw.wodss.tippspiel.dto.RestTournamentGroupDTO;
 import ch.fhnw.wodss.tippspiel.dto.TournamentGroupDTO;
 import ch.fhnw.wodss.tippspiel.service.TournamentGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +58,7 @@ public class TournamentGroupController {
     })
     @PostMapping(produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TournamentGroupDTO> createTournamentGroup(@Valid @RequestBody TournamentGroup tournamentGroup, BindingResult result) {
+    public ResponseEntity<TournamentGroupDTO> createTournamentGroup(@Valid @RequestBody RestTournamentGroupDTO tournamentGroup, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -71,7 +72,7 @@ public class TournamentGroupController {
     })
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TournamentGroupDTO> updateTournamentGroup(@Valid @RequestBody TournamentGroup tournamentGroup, @PathVariable Long id, BindingResult result) {
+    public ResponseEntity<TournamentGroupDTO> updateTournamentGroup(@Valid @RequestBody RestTournamentGroupDTO tournamentGroup, @PathVariable Long id, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }

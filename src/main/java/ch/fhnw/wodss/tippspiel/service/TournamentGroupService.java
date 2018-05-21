@@ -3,6 +3,7 @@ package ch.fhnw.wodss.tippspiel.service;
 import ch.fhnw.wodss.tippspiel.domain.Bet;
 import ch.fhnw.wodss.tippspiel.domain.TournamentGroup;
 import ch.fhnw.wodss.tippspiel.dto.BetDTO;
+import ch.fhnw.wodss.tippspiel.dto.RestTournamentGroupDTO;
 import ch.fhnw.wodss.tippspiel.dto.TournamentGroupDTO;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
@@ -55,22 +56,22 @@ public class TournamentGroupService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public TournamentGroupDTO addTournamentGroup(TournamentGroup tournamentGroup) {
-        if (tournamentGroupRepository.findByNameEquals(tournamentGroup.getName()).isPresent()) {
-            throw new IllegalActionException("A tournament group with name: " + tournamentGroup.getName() + " already exists.");
+    public TournamentGroupDTO addTournamentGroup(RestTournamentGroupDTO restTournamentGroup) {
+        if (tournamentGroupRepository.findByNameEquals(restTournamentGroup.getName()).isPresent()) {
+            throw new IllegalActionException("A tournament group with name: " + restTournamentGroup.getName() + " already exists.");
         }
+        TournamentGroup tournamentGroup = new TournamentGroup(restTournamentGroup.getName());
         tournamentGroupRepository.save(tournamentGroup);
         return convertTournementGroupToTournementGroupDTO(tournamentGroup);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public TournamentGroupDTO updateTournamentGroup(Long id, TournamentGroup tournamentGroup) {
-        if (tournamentGroupRepository.existsById(id)) {
-            tournamentGroup.setId(id);
-            tournamentGroupRepository.save(tournamentGroup);
-            return convertTournementGroupToTournementGroupDTO(tournamentGroup);
-        }
-        throw new ResourceNotFoundException("Can't find a tournament group with id: " + id);
+    public TournamentGroupDTO updateTournamentGroup(Long id, RestTournamentGroupDTO restTournamentGroup) {
+        TournamentGroup tournamentGroup = tournamentGroupRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No tournament group with id " + id + "found!"));
+        tournamentGroup.setId(id);
+        tournamentGroup.setName(restTournamentGroup.getName());
+        tournamentGroupRepository.save(tournamentGroup);
+        return convertTournementGroupToTournementGroupDTO(tournamentGroup);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)

@@ -64,11 +64,11 @@ public class TournamentTeamController {
     @CachePut(value = "tournamentTeams", key = "#id", unless = "#result.statusCode != 200")
     @PutMapping(value = "/{id}", produces = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TournamentTeam> updateTournamentTeam(@Valid @RequestBody TournamentTeam tournamentTeam, @PathVariable Long id, BindingResult result) {
+    public ResponseEntity<TournamentTeamDTO> updateTournamentTeam(@Valid @RequestBody RestTournamentTeamDTO restTournamentTeamDTO, @PathVariable Long id, BindingResult result) {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        TournamentTeam newTeam = service.updateTournamentTeam(id, tournamentTeam);
+        TournamentTeamDTO newTeam = service.updateTournamentTeam(id, restTournamentTeamDTO);
         return new ResponseEntity<>(newTeam, HttpStatus.OK);
     }
 
