@@ -22,10 +22,7 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +35,7 @@ public class GMail {
     private static final String APPLICATION_NAME = "FHNW Tippspiel";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String CREDENTIALS_FOLDER = "src/main/resources/";
-    private static final String CLIENT_SECRET_DIR = "client_secret_mail.json";
+    private static final String CLIENT_SECRET_DIR = "client_secret.json";
     private static final List<String> SCOPES = Collections.singletonList(GmailScopes.GMAIL_SEND);
 
 
@@ -51,8 +48,8 @@ public class GMail {
      */
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
-        InputStream in = GMail.class.getResourceAsStream(CLIENT_SECRET_DIR);
-        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+        InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(CREDENTIALS_FOLDER + CLIENT_SECRET_DIR));
+        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, inputStreamReader);
 
         // Build flow and trigger user authorization request.
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
