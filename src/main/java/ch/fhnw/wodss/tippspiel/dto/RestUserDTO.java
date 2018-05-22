@@ -22,8 +22,6 @@ public class RestUserDTO {
     @Size(min = 10, max = 100)
     private String email;
     @JsonProperty("password")
-    @NotNull
-    @Size(min = 10, max = 1024)
     private String password;
     @JsonProperty("newPassword")
     private String newPassword;

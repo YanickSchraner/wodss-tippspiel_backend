@@ -74,16 +74,6 @@ public class UserController {
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/email", consumes = "application/json", produces = "application/json")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<UserDTO> updateUserEmail(@Valid @RequestBody RestUserDTO restUserDTO, @AuthenticationPrincipal User user, BindingResult result) {
-        if (result.hasErrors()) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        UserDTO newUser = service.changeEmail(user, restUserDTO);
-        return new ResponseEntity<>(newUser, HttpStatus.OK);
-    }
-
     @PutMapping(value = "/passwordReset")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> resetUserPassword(@AuthenticationPrincipal User user) {
@@ -91,11 +81,15 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
-    @PutMapping(value = "/passwordChange", consumes = "application/json")
+    @PutMapping(value = "/{id}", consumes = "application/json", produces = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> changeUserPassword(@RequestParam("old") String oldPassword, @RequestParam("new") String newPassword, @AuthenticationPrincipal User user, BindingResult result) {
-        service.changePassword(user, oldPassword, newPassword);
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @RequestBody RestUserDTO restUserDTO, @AuthenticationPrincipal User user, BindingResult result) {
+        if (result.hasErrors()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        if (!id.equals(user.getId())) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        UserDTO newUser = service.updateUser(user, restUserDTO);
+        return new ResponseEntity<>(newUser, HttpStatus.OK);
     }
 
     @CacheEvict(value = "users", key = "#id")

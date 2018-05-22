@@ -90,6 +90,7 @@ public class UserService {
         if (repository.findUserByEmailEquals(restUserDTO.getEmail()).isPresent()) {
             throw new IllegalActionException("User with email: " + restUserDTO.getEmail() + " already exists");
         }
+        if (restUserDTO.getPassword() == null) throw new IllegalActionException("Please provide a password");
         User user = new User();
         user.setName(restUserDTO.getName());
         user.setEmail(restUserDTO.getEmail());
@@ -117,27 +118,22 @@ public class UserService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public UserDTO changeEmail(User user, RestUserDTO restUserDTO) {
+    public UserDTO updateUser(User user, RestUserDTO restUserDTO) {
         Optional<User> userToUpdate = repository.findById(user.getId());
         if (userToUpdate.isPresent()) {
+            userToUpdate.get().setName(restUserDTO.getName());
             userToUpdate.get().setEmail(restUserDTO.getEmail());
+            userToUpdate.get().setDailyResults(restUserDTO.isDailyResults());
+            userToUpdate.get().setReminders(restUserDTO.isReminders());
+            if (restUserDTO.getNewPassword() != null) {
+                boolean correctPW = argon2PasswordEncoder.matches(userToUpdate.get().getPassword(), argon2PasswordEncoder.encode(restUserDTO.getPassword()));
+                if (!correctPW) throw new IllegalActionException("You entered a wrong password!");
+                userToUpdate.get().setPassword(argon2PasswordEncoder.encode(restUserDTO.getNewPassword()));
+            }
             user = repository.save(userToUpdate.get());
             return convertUserToUserDTO(user);
         } else {
-            throw new ResourceNotFoundException("Can't find the given user to change the email address.");
-        }
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void changePassword(User user, String oldPassword, String newPassword) {
-        Optional<User> userToUpdate = repository.findById(user.getId());
-        if (userToUpdate.isPresent()) {
-            boolean correctPW = argon2PasswordEncoder.matches(userToUpdate.get().getPassword(), argon2PasswordEncoder.encode(oldPassword));
-            if (!correctPW) throw new IllegalActionException("You entered a wrong password!");
-            userToUpdate.get().setPassword(argon2PasswordEncoder.encode(newPassword));
-            repository.save(userToUpdate.get());
-        } else {
-            throw new ResourceNotFoundException("Can't find the given user to change the password.");
+            throw new ResourceNotFoundException("Can't find the given user.");
         }
     }
 
