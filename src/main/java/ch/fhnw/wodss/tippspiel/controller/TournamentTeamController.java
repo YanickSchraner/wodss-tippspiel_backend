@@ -50,7 +50,6 @@ public class TournamentTeamController {
         return new ResponseEntity<>(team, HttpStatus.OK);
     }
 
-    @CachePut(value = "tournamentTeams", key ="#tournamentTeam.id", unless = "#result.statusCode != 201")
     @PostMapping(produces = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TournamentTeamDTO> addTournamentTeam(@Valid @RequestBody RestTournamentTeamDTO restTournamentTeamDTO, BindingResult result) {
