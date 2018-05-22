@@ -76,7 +76,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/users").permitAll()
                 .anyRequest().authenticated()
                 .and().exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-                //.and().anonymous().disable()
                 .and().csrf().disable() // CSRF protection is done with custom HTTP header (OWASP suggestion)
                 .addFilterBefore(exceptionHandlerFilter, CsrfFilter.class)
                 .addFilterBefore(xRequestedWithHeaderFilter, CsrfFilter.class)
