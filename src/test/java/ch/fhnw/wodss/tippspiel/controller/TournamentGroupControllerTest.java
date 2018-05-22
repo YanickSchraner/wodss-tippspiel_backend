@@ -217,11 +217,11 @@ public class TournamentGroupControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     public void create_TournamentGroupCreated_ShouldReturnCreated() throws Exception {
-        TournamentGroupDTO tournamentGroupDTO = new TournamentGroupDTOBuilder()
-                .withId(1L)
+        RestTournamentGroupDTO restTournamentGroupDTO = new RestTournamentGroupDTOBuilder()
                 .withName("GroupA")
                 .build();
-        RestTournamentGroupDTO restTournamentGroupDTO = new RestTournamentGroupDTOBuilder()
+        TournamentGroupDTO tournamentGroupDTO = new TournamentGroupDTOBuilder()
+                .withId(1L)
                 .withName("GroupA")
                 .build();
         when(tournamentGroupServiceMock.addTournamentGroup(eq(restTournamentGroupDTO))).thenReturn(tournamentGroupDTO);
@@ -229,9 +229,8 @@ public class TournamentGroupControllerTest {
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(tournamentGroupDTO)))
+                .content(TestUtil.convertObjectToJsonBytes(restTournamentGroupDTO)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id", equalTo(1)))
                 .andExpect(jsonPath("$.name", equalTo("GroupA")));
         Mockito.verify(tournamentGroupServiceMock, times(1)).addTournamentGroup(eq(restTournamentGroupDTO));
     }
@@ -239,11 +238,10 @@ public class TournamentGroupControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     public void create_InvalidTournamentGroupFormat_ShouldReturnBadRequest() throws Exception {
+        RestTournamentGroupDTO restTournamentGroupDTO = new RestTournamentGroupDTOBuilder()
+                .build();
         TournamentGroupDTO tournamentGroupDTO = new TournamentGroupDTOBuilder()
                 .withId(1L)
-                .withName("GroupA")
-                .build();
-        RestTournamentGroupDTO restTournamentGroupDTO = new RestTournamentGroupDTOBuilder()
                 .withName("GroupA")
                 .build();
         when(tournamentGroupServiceMock.addTournamentGroup(eq(restTournamentGroupDTO))).thenReturn(tournamentGroupDTO);
@@ -251,7 +249,7 @@ public class TournamentGroupControllerTest {
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(tournamentGroupDTO)))
+                .content(TestUtil.convertObjectToJsonBytes(restTournamentGroupDTO)))
                 .andExpect(status().isBadRequest());
         Mockito.verify(tournamentGroupServiceMock, times(0)).addTournamentGroup(eq(restTournamentGroupDTO));
     }
@@ -278,21 +276,20 @@ public class TournamentGroupControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     public void update_TournamentGroupUpdated_ShouldReturnOk() throws Exception {
+        RestTournamentGroupDTO restTournamentGroupDTO = new RestTournamentGroupDTOBuilder()
+                .withName("GroupB")
+                .build();
         TournamentGroupDTO tournamentGroupDTO = new TournamentGroupDTOBuilder()
                 .withId(1L)
-                .withName("GroupA")
-                .build();
-        RestTournamentGroupDTO restTournamentGroupDTO = new RestTournamentGroupDTOBuilder()
-                .withName("GroupA")
+                .withName("GroupB")
                 .build();
         when(tournamentGroupServiceMock.updateTournamentGroup(eq(1L), eq(restTournamentGroupDTO))).thenReturn(tournamentGroupDTO);
         mockMvc.perform(put("/tournamentGroups/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(tournamentGroupDTO)))
+                .content(TestUtil.convertObjectToJsonBytes(restTournamentGroupDTO)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", equalTo(1)))
                 .andExpect(jsonPath("$.name", equalTo("GroupB")));
         Mockito.verify(tournamentGroupServiceMock, times(1)).updateTournamentGroup(eq(1L), eq(restTournamentGroupDTO));
     }
@@ -302,7 +299,6 @@ public class TournamentGroupControllerTest {
     public void update_InvalidTournamentGroupFormat_ShouldReturnBadRequest() throws Exception {
         TournamentGroupDTO tournamentGroupDTO = new TournamentGroupDTOBuilder()
                 .withId(1L)
-                .withName("GroupA")
                 .build();
         RestTournamentGroupDTO restTournamentGroupDTO = new RestTournamentGroupDTOBuilder()
                 .withName("GroupA")
