@@ -15,7 +15,6 @@ public class TippspielApplication {
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(TippspielApplication.class, args);
-        //context.getBean(TestData.class).initData();
     }
 
 
