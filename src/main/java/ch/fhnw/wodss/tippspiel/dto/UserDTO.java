@@ -1,7 +1,5 @@
 package ch.fhnw.wodss.tippspiel.dto;
 
-import ch.fhnw.wodss.tippspiel.domain.Bet;
-import ch.fhnw.wodss.tippspiel.domain.BetGroup;
 import ch.fhnw.wodss.tippspiel.domain.Role;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
