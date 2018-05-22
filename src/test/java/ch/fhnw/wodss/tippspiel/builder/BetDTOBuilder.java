@@ -39,13 +39,13 @@ public class BetDTOBuilder {
         return this;
     }
 
-    public BetDTOBuilder withGame(Long game) {
-        bet.setGameId(game);
+    public BetDTOBuilder withGameId(Long gameId) {
+        bet.setGameId(gameId);
         return this;
     }
 
-    public BetDTOBuilder withUserId(Long user) {
-        bet.setUserId(user);
+    public BetDTOBuilder withUserId(Long userId) {
+        bet.setUserId(userId);
         return this;
     }
 

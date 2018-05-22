@@ -1,11 +1,11 @@
 package ch.fhnw.wodss.tippspiel.service;
 
-import ch.fhnw.wodss.tippspiel.builder.BetBuilder;
-import ch.fhnw.wodss.tippspiel.builder.GameBuilder;
-import ch.fhnw.wodss.tippspiel.builder.UserBuilder;
+import ch.fhnw.wodss.tippspiel.builder.*;
 import ch.fhnw.wodss.tippspiel.domain.Bet;
 import ch.fhnw.wodss.tippspiel.domain.Game;
 import ch.fhnw.wodss.tippspiel.domain.User;
+import ch.fhnw.wodss.tippspiel.dto.BetDTO;
+import ch.fhnw.wodss.tippspiel.dto.RestBetDTO;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceAlreadyExistsException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotAllowedException;
@@ -61,10 +61,10 @@ public class BetServiceTest {
                 .withUser(user)
                 .build();
         when(betRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(bet));
-        Bet result = betService.getBetById(1L, user);
+        BetDTO result = betService.getBetById(1L, user);
         Assert.assertEquals(bet, result);
-        Assert.assertEquals((long) 1, (long) result.getAwayTeamGoals());
-        Assert.assertEquals((long) 0, (long) result.getHomeTeamGoals());
+        Assert.assertEquals((long) 1, (long) result.getActualAwayTeamGoals());
+        Assert.assertEquals((long) 0, (long) result.getActualHomeTeamGoals());
         Assert.assertEquals((long) 10, (long) result.getScore());
         Mockito.verify(betRepositoryMock, times(1)).findById(1L);
     }
@@ -121,11 +121,16 @@ public class BetServiceTest {
                 .withUser(user)
                 .withGame(game)
                 .build();
+        RestBetDTO restBet = new RestBetDTOBuilder()
+                .withGameId(1L)
+                .withHomeTeamGoals(0)
+                .withAwayTeamGoals(1)
+                .build();
         when(gameRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(game));
         when(betRepositoryMock.existsBetByUser_IdAndGame_Id(1L, 1L)).thenReturn(false);
         when(betRepositoryMock.save(bet)).thenReturn(bet);
-        Bet result = betService.addBet(bet, user);
-        Assert.assertEquals(bet, result);
+        BetDTO result = betService.addBet(restBet, user);
+        Assert.assertEquals((long)bet.getId(), result.getId());
         Mockito.verify(gameRepositoryMock, times(1)).findById(1L);
         Mockito.verify(betRepositoryMock, times(1)).existsBetByUser_IdAndGame_Id(1L, 1L);
         Mockito.verify(betRepositoryMock, times(1)).save(bet);
@@ -150,10 +155,15 @@ public class BetServiceTest {
                 .withUser(user)
                 .withGame(game)
                 .build();
+        RestBetDTO restBet = new RestBetDTOBuilder()
+                .withGameId(1L)
+                .withHomeTeamGoals(0)
+                .withAwayTeamGoals(1)
+                .build();
         when(gameRepositoryMock.findById(1L)).thenReturn(Optional.empty());
         when(betRepositoryMock.existsBetByUser_IdAndGame_Id(1L, 1L)).thenReturn(false);
         when(betRepositoryMock.save(bet)).thenReturn(bet);
-        betService.addBet(bet, user);
+        betService.addBet(restBet, user);
         Mockito.verify(gameRepositoryMock, times(1)).findById(1L);
         Mockito.verify(betRepositoryMock, times(0)).existsBetByUser_IdAndGame_Id(1L, 1L);
         Mockito.verify(betRepositoryMock, times(0)).save(bet);
@@ -178,10 +188,15 @@ public class BetServiceTest {
                 .withUser(user)
                 .withGame(game)
                 .build();
+        RestBetDTO restBet = new RestBetDTOBuilder()
+                .withGameId(1L)
+                .withHomeTeamGoals(0)
+                .withAwayTeamGoals(1)
+                .build();
         when(gameRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(game));
         when(betRepositoryMock.existsBetByUser_IdAndGame_Id(1L, 1L)).thenReturn(true);
         when(betRepositoryMock.save(bet)).thenReturn(bet);
-        betService.addBet(bet, user);
+        betService.addBet(restBet, user);
         Mockito.verify(gameRepositoryMock, times(1)).findById(1L);
         Mockito.verify(betRepositoryMock, times(1)).existsBetByUser_IdAndGame_Id(1L, 1L);
         Mockito.verify(betRepositoryMock, times(0)).save(bet);
@@ -206,10 +221,15 @@ public class BetServiceTest {
                 .withUser(user)
                 .withGame(game)
                 .build();
+        RestBetDTO restBet = new RestBetDTOBuilder()
+                .withGameId(1L)
+                .withHomeTeamGoals(0)
+                .withAwayTeamGoals(1)
+                .build();
         when(gameRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(game));
         when(betRepositoryMock.existsBetByUser_IdAndGame_Id(1L, 1L)).thenReturn(false);
         when(betRepositoryMock.save(bet)).thenReturn(bet);
-        betService.addBet(bet, user);
+        betService.addBet(restBet, user);
         Mockito.verify(gameRepositoryMock, times(1)).findById(1L);
         Mockito.verify(betRepositoryMock, times(1)).existsBetByUser_IdAndGame_Id(1L, 1L);
         Mockito.verify(betRepositoryMock, times(0)).save(bet);
@@ -238,10 +258,15 @@ public class BetServiceTest {
                 .withUser(user)
                 .withGame(game)
                 .build();
+        RestBetDTO restBet = new RestBetDTOBuilder()
+                .withGameId(1L)
+                .withHomeTeamGoals(0)
+                .withAwayTeamGoals(1)
+                .build();
         when(gameRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(game));
         when(betRepositoryMock.existsBetByUser_IdAndGame_Id(1L, 1L)).thenReturn(false);
         when(betRepositoryMock.save(bet)).thenReturn(bet);
-        betService.addBet(bet, intercepter);
+        betService.addBet(restBet, intercepter);
         Mockito.verify(gameRepositoryMock, times(1)).findById(1L);
         Mockito.verify(betRepositoryMock, times(0)).existsBetByUser_IdAndGame_Id(1L, 1L);
         Mockito.verify(betRepositoryMock, times(0)).save(bet);
@@ -266,12 +291,17 @@ public class BetServiceTest {
                 .withUser(user)
                 .withGame(game)
                 .build();
+        RestBetDTO restBet = new RestBetDTOBuilder()
+                .withGameId(1L)
+                .withHomeTeamGoals(0)
+                .withAwayTeamGoals(1)
+                .build();
         when(gameRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(game));
         when(betRepositoryMock.existsBetByUser_IdAndGame_Id(1L, 1L)).thenReturn(true);
         when(betRepositoryMock.save(bet)).thenReturn(bet);
         when(betRepositoryMock.existsById(1L)).thenReturn(true);
-        Bet result = betService.updateBet(1L, bet, user);
-        Assert.assertEquals(bet, result);
+        BetDTO result = betService.updateBet(1L, restBet, user);
+        Assert.assertEquals((long)bet.getId(), result.getId());
         Mockito.verify(gameRepositoryMock, times(1)).findById(1L);
         Mockito.verify(betRepositoryMock, times(1)).existsBetByUser_IdAndGame_Id(1L, 1L);
         Mockito.verify(betRepositoryMock, times(1)).save(bet);
@@ -297,11 +327,16 @@ public class BetServiceTest {
                 .withUser(user)
                 .withGame(game)
                 .build();
+        RestBetDTO restBet = new RestBetDTOBuilder()
+                .withGameId(1L)
+                .withHomeTeamGoals(0)
+                .withAwayTeamGoals(1)
+                .build();
         when(gameRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(game));
         when(betRepositoryMock.existsBetByUser_IdAndGame_Id(1L, 1L)).thenReturn(true);
         when(betRepositoryMock.save(bet)).thenReturn(bet);
         when(betRepositoryMock.existsById(1L)).thenReturn(false);
-        betService.updateBet(1L, bet, user);
+        betService.updateBet(1L, restBet, user);
         Mockito.verify(gameRepositoryMock, times(0)).findById(1L);
         Mockito.verify(betRepositoryMock, times(0)).existsBetByUser_IdAndGame_Id(1L, 1L);
         Mockito.verify(betRepositoryMock, times(0)).save(bet);
@@ -327,11 +362,16 @@ public class BetServiceTest {
                 .withUser(user)
                 .withGame(game)
                 .build();
+        RestBetDTO restBet = new RestBetDTOBuilder()
+                .withGameId(1L)
+                .withHomeTeamGoals(0)
+                .withAwayTeamGoals(1)
+                .build();
         when(gameRepositoryMock.findById(1L)).thenReturn(Optional.empty());
         when(betRepositoryMock.existsBetByUser_IdAndGame_Id(1L, 1L)).thenReturn(true);
         when(betRepositoryMock.save(bet)).thenReturn(bet);
         when(betRepositoryMock.existsById(1L)).thenReturn(true);
-        betService.updateBet(1L, bet, user);
+        betService.updateBet(1L, restBet, user);
         Mockito.verify(gameRepositoryMock, times(1)).findById(1L);
         Mockito.verify(betRepositoryMock, times(0)).existsBetByUser_IdAndGame_Id(1L, 1L);
         Mockito.verify(betRepositoryMock, times(0)).save(bet);
@@ -357,11 +397,16 @@ public class BetServiceTest {
                 .withUser(user)
                 .withGame(game)
                 .build();
+        RestBetDTO restBet = new RestBetDTOBuilder()
+                .withGameId(1L)
+                .withHomeTeamGoals(0)
+                .withAwayTeamGoals(1)
+                .build();
         when(gameRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(game));
         when(betRepositoryMock.existsBetByUser_IdAndGame_Id(1L, 1L)).thenReturn(false);
         when(betRepositoryMock.save(bet)).thenReturn(bet);
         when(betRepositoryMock.existsById(1L)).thenReturn(true);
-        betService.updateBet(1L, bet, user);
+        betService.updateBet(1L, restBet, user);
         Mockito.verify(gameRepositoryMock, times(1)).findById(1L);
         Mockito.verify(betRepositoryMock, times(1)).existsBetByUser_IdAndGame_Id(1L, 1L);
         Mockito.verify(betRepositoryMock, times(0)).save(bet);
@@ -387,11 +432,16 @@ public class BetServiceTest {
                 .withUser(user)
                 .withGame(game)
                 .build();
+        RestBetDTO restBet = new RestBetDTOBuilder()
+                .withGameId(1L)
+                .withHomeTeamGoals(0)
+                .withAwayTeamGoals(1)
+                .build();
         when(gameRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(game));
         when(betRepositoryMock.existsBetByUser_IdAndGame_Id(1L, 1L)).thenReturn(true);
         when(betRepositoryMock.save(bet)).thenReturn(bet);
         when(betRepositoryMock.existsById(1L)).thenReturn(true);
-        betService.updateBet(1L, bet, user);
+        betService.updateBet(1L, restBet, user);
         Mockito.verify(gameRepositoryMock, times(1)).findById(1L);
         Mockito.verify(betRepositoryMock, times(1)).existsBetByUser_IdAndGame_Id(1L, 1L);
         Mockito.verify(betRepositoryMock, times(0)).save(bet);
