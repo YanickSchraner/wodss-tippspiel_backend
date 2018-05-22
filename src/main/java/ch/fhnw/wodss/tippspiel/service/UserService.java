@@ -113,7 +113,7 @@ public class UserService {
         if (repository.existsById(id)) {
             repository.deleteById(id);
         } else {
-            throw new ResourceNotFoundException("Can't find the given user to delete");
+            throw new IllegalActionException("Operation failed.");
         }
     }
 
@@ -127,13 +127,13 @@ public class UserService {
             userToUpdate.get().setReminders(restUserDTO.isReminders());
             if (restUserDTO.getNewPassword() != null) {
                 boolean correctPW = argon2PasswordEncoder.matches(userToUpdate.get().getPassword(), argon2PasswordEncoder.encode(restUserDTO.getPassword()));
-                if (!correctPW) throw new IllegalActionException("You entered a wrong password!");
+                if (!correctPW) throw new IllegalActionException("Operation failed.");
                 userToUpdate.get().setPassword(argon2PasswordEncoder.encode(restUserDTO.getNewPassword()));
             }
             user = repository.save(userToUpdate.get());
             return convertUserToUserDTO(user);
         } else {
-            throw new ResourceNotFoundException("Can't find the given user.");
+            throw new IllegalActionException("Operation failed.");
         }
     }
 
