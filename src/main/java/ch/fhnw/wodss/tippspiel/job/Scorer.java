@@ -4,6 +4,8 @@ import ch.fhnw.wodss.tippspiel.domain.Bet;
 import ch.fhnw.wodss.tippspiel.domain.BetGroup;
 import ch.fhnw.wodss.tippspiel.persistance.BetGroupRepository;
 import ch.fhnw.wodss.tippspiel.persistance.BetRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,7 @@ import java.util.List;
 @Component
 public class Scorer {
 
+    private static final Logger logger = LoggerFactory.getLogger(Scorer.class);
     private BetRepository betRepository;
     private BetGroupRepository betGroupRepository;
 
@@ -35,6 +38,7 @@ public class Scorer {
             bet.setScore(score);
             betRepository.save(bet);
         }
+        logger.info("Bet scores updated.");
     }
 
     private int calculateScore(Bet bet) {
@@ -68,5 +72,6 @@ public class Scorer {
             betGroup.setScore((int) score);
             betGroupRepository.save(betGroup);
         }
+        logger.info("Group scores updated.");
     }
 }

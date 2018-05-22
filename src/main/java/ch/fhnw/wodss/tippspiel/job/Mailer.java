@@ -56,6 +56,7 @@ public class Mailer {
                 logger.error(Arrays.toString(e.getStackTrace()));
             }
         }
+        logger.info("Reminders sent");
     }
 
     @Scheduled(cron = "0 0 23 * * *")
@@ -81,6 +82,7 @@ public class Mailer {
                 logger.error(Arrays.toString(e.getStackTrace()));
             }
         }
+        logger.info("Daily report sent.");
     }
 
     private boolean checkUserHasOpenBets(User user) {
