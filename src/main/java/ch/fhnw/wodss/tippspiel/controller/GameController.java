@@ -18,7 +18,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/games")
-@PreAuthorize("hasRole('USER')")
 public class GameController {
 
     private final GameService service;

@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
 import javax.validation.constraints.Size;
 
 @Data
@@ -26,6 +25,8 @@ public class RestUserDTO {
     @NotNull
     @Size(min = 10, max = 1024)
     private String password;
+    @JsonProperty("newPassword")
+    private String newPassword;
     @JsonProperty("reminders")
     private boolean reminders;
     @JsonProperty("dailyResults")

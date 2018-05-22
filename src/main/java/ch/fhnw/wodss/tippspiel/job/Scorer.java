@@ -25,7 +25,7 @@ public class Scorer {
         this.betGroupRepository = betGroupRepository;
     }
 
-    @Scheduled(cron = "0 0 23 * * *")
+    @Scheduled(cron = "30 */30 17-23 * * *")
     public void setBetScore() {
         LocalDateTime start = LocalDateTime.now().withHour(0).withMinute(0);
         LocalDateTime end = LocalDateTime.now().withHour(23).withMinute(59);
@@ -60,7 +60,7 @@ public class Scorer {
         return score;
     }
 
-    @Scheduled(cron = "0 10 23 * * *")
+    @Scheduled(cron = "50 */30 17-23 * * *")
     @Transactional(propagation = Propagation.REQUIRED)
     public void updateBetGroupScore() {
         for (BetGroup betGroup : betGroupRepository.findAll()) {

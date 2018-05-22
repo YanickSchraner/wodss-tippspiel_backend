@@ -1,10 +1,12 @@
 package ch.fhnw.wodss.tippspiel.service;
 
 import ch.fhnw.wodss.tippspiel.domain.Bet;
+import ch.fhnw.wodss.tippspiel.domain.Role;
 import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.dto.*;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
+import ch.fhnw.wodss.tippspiel.persistance.RoleRepository;
 import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
 import ch.fhnw.wodss.tippspiel.security.Argon2PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +15,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -28,13 +27,15 @@ public class UserService {
     private final BetService betService;
     private final BetGroupService betGroupService;
     private final Argon2PasswordEncoder argon2PasswordEncoder;
+    private final RoleRepository roleRepository;
 
     @Autowired
-    public UserService(UserRepository repository, BetGroupService betGroupService, BetService betService, Argon2PasswordEncoder argon2PasswordEncoder) {
+    public UserService(UserRepository repository, BetGroupService betGroupService, BetService betService, Argon2PasswordEncoder argon2PasswordEncoder, RoleRepository roleRepository) {
         this.repository = repository;
         this.betGroupService = betGroupService;
         this.betService = betService;
         this.argon2PasswordEncoder = argon2PasswordEncoder;
+        this.roleRepository = roleRepository;
     }
 
     private List<UserRankingDTO> createAllUsersForRankingDTOList(List<User> users) {
@@ -92,9 +93,15 @@ public class UserService {
         User user = new User();
         user.setName(restUserDTO.getName());
         user.setEmail(restUserDTO.getEmail());
-        user.setPassword(restUserDTO.getPassword());
+        user.setPassword(argon2PasswordEncoder.encode(restUserDTO.getPassword()));
         user.setReminders(restUserDTO.isReminders());
         user.setDailyResults(restUserDTO.isDailyResults());
+        user.setBets(new ArrayList<>());
+        user.setBetGroups(new ArrayList<>());
+        Set<Role> roles = new HashSet<>();
+        Role role = roleRepository.findById(1L).orElse(new Role("ROLE_USER"));
+        roles.add(role);
+        user.setRoles(roles);
         user = repository.save(user);
         return convertUserToUserDTO(user);
     }
@@ -142,8 +149,8 @@ public class UserService {
     private UserDTO convertUserToUserDTO(User user) {
         UserDTO userDTO = new UserDTO();
         userDTO.setId(user.getId());
-        List<BetDTO> betDTOs = user.getBets().stream().map(betService::convertBetToBetDTO).collect(Collectors.toList());
-        List<BetGroupDTO> betGroupDTOs = user.getBetGroups().stream().map(betGroupService::convertBetGroupToBetGroupDTO).collect(Collectors.toList());
+        List<BetDTO> betDTOs = user.getBets().isEmpty() ? new ArrayList<>() : user.getBets().stream().map(betService::convertBetToBetDTO).collect(Collectors.toList());
+        List<BetGroupDTO> betGroupDTOs = user.getBetGroups().isEmpty() ? new ArrayList<>() : user.getBetGroups().stream().map(betGroupService::convertBetGroupToBetGroupDTO).collect(Collectors.toList());
         userDTO.setBets(betDTOs);
         userDTO.setBetGroups(betGroupDTOs);
         userDTO.setName(user.getName());
@@ -152,7 +159,7 @@ public class UserService {
         userDTO.setReminders(user.isReminders());
         userDTO.setDailyResults(user.isDailyResults());
         userDTO.setRole(user.getRoles());
-        return new UserDTO();
+        return userDTO;
     }
 
 }

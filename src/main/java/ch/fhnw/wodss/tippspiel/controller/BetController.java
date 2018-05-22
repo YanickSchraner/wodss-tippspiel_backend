@@ -13,11 +13,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/bets")
-@PreAuthorize("hasRole('USER')")
 public class BetController {
 
     private final BetService service;

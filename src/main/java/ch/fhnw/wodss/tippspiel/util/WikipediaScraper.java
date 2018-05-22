@@ -72,6 +72,7 @@ public class WikipediaScraper {
         locations.put("Moskau", "mos");
         locations.put("Jekaterinburg", "jek");
         locations.put("Sankt", "san");
+        locations.put("Sankt Petersburg", "san");
         locations.put("Rostow", "ros");
         locations.put("Samara", "sam");
         locations.put("Wolgograd", "wol");
@@ -80,6 +81,8 @@ public class WikipediaScraper {
         locations.put("Saransk", "sar");
         locations.put("Kaliningrad", "kal");
         locations.put("Nischni", "nis");
+        locations.put("Rostow am Don", "ros");
+        locations.put("Nischni Nowgorod", "nis");
 
         month.put("Januar", 1);
         month.put("Februar", 2);
@@ -96,137 +99,231 @@ public class WikipediaScraper {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public void scrape() {
+    public void scrapeGroupToSemiFinal() {
         Document doc = null;
         try {
             doc = Jsoup.connect(WIKIPEDIA_SEARCH_URL).userAgent("Mozilla/5.0").get();
             Elements groups = doc.select("table.wikitable.zebra.hintergrundfarbe5 > tbody");
             for (int countGroups = 0; countGroups < groups.size(); countGroups++) {
                 Element group = groups.get(countGroups);
-                for (int i = 0; i < group.children().size(); i++) {
-                    Element gameDetails = group.child(i).child(0);
-                    String detailsString = gameDetails.textNodes().get(0).text();
-                    String loc = "";
-                    if (gameDetails.childNodeSize() == 1) {
-                        String[] splitted = detailsString.split(" ");
-                        if (splitted.length == 9) { // Kaliningrad is in the same timezone as MESZ
-                            loc = splitted[8];
-                        } else {
-                            loc = splitted[10];
-                        }
-                        loc = lookupLocationAbreviation(loc);
-                    } else {
-                        loc = gameDetails.child(0).ownText();
-                        loc = lookupLocationAbreviation(loc);
-                    }
-                    int day = Integer.parseInt(detailsString.split(" ")[1].replace(".", ""));
-                    String monthStr = detailsString.split(" ")[2];
-                    int month = this.month.getOrDefault(monthStr, 6);
-                    int year = Integer.parseInt(detailsString.split(" ")[3].replace(",", ""));
-                    String time = detailsString.split(" ")[4].replace("(", "");
-                    int hour = Integer.parseInt(time.split(":")[0]);
-                    int minute = Integer.parseInt(time.split(":")[1]);
-                    LocalDateTime localDateTime = LocalDateTime.now();
-                    localDateTime = localDateTime.withDayOfMonth(day)
-                            .withMonth(month)
-                            .withYear(year)
-                            .withHour(hour)
-                            .withMinute(minute)
-                            .withSecond(0)
-                            .withNano(0);
-                    i++; // Move index to teams and result row
-                    Element teamsAndResult = group.child(i);
-                    String homeTeamName = teamsAndResult.child(0).ownText();
-                    homeTeamName = lookupTeamAbreviation(homeTeamName);
-                    String awayTeamName = teamsAndResult.child(2).ownText();
-                    awayTeamName = lookupTeamAbreviation(awayTeamName);
-                    String score = teamsAndResult.child(3).ownText();
-                    String home = score.split(":")[0];
-                    String away = score.split(":")[1];
-                    Integer homeScore = null;
-                    Integer awayScore = null;
-                    if (!home.contains("-")) {
-                        homeScore = Integer.parseInt(home);
-                    }
-                    if (!away.contains("-")) {
-                        awayScore = Integer.parseInt(away);
-                    }
-                    String phaseName = "Gruppenphase";
-                    String groupName = "";
-                    switch (countGroups) {
-                        case 0:
-                            groupName = "A";
-                            break;
-                        case 1:
-                            groupName = "B";
-                            break;
-                        case 2:
-                            groupName = "C";
-                            break;
-                        case 3:
-                            groupName = "D";
-                            break;
-                        case 4:
-                            groupName = "E";
-                            break;
-                        case 5:
-                            groupName = "F";
-                            break;
-                        case 6:
-                            groupName = "G";
-                            break;
-                        case 7:
-                            groupName = "H";
-                            break;
-                        case 8:
-                            phaseName = "Achtelfinale";
-                            break;
-                        case 9:
-                            phaseName = "Viertelfinale";
-                            break;
-                        case 10:
-                            phaseName = "Halbfinale";
-                            break;
-                        case 11:
-                            phaseName = "Spiel um Platz 3";
-                            break;
-                        default:
-                            phaseName = "Gruppenphase";
-                            groupName = "A";
-                            break;
-                    }
-                    Location location = locationRepository.findFirstByNameEquals(loc).orElse(new Location(loc));
-                    locationRepository.save(location);
-                    Phase phase = phaseRepository.findFirstByNameEquals(phaseName).orElse(new Phase(phaseName));
-                    phaseRepository.save(phase);
-                    if (groupName.equals("")) {
-                        groupName = "-";
-                    }
-                    TournamentGroup tournamentGroup = tournamentGroupRepository.findByNameEquals(groupName)
-                            .orElse(new TournamentGroup(groupName));
-                    tournamentGroupRepository.save(tournamentGroup);
-                    TournamentTeam homeTeam = tournamentTeamRepository.findTournamentTeamByNameEquals(homeTeamName)
-                            .orElse(new TournamentTeam(homeTeamName, tournamentGroup));
-                    tournamentTeamRepository.save(homeTeam);
-                    TournamentTeam awayTeam = tournamentTeamRepository.findTournamentTeamByNameEquals(awayTeamName)
-                            .orElse(new TournamentTeam(awayTeamName, tournamentGroup));
-                    tournamentTeamRepository.save(awayTeam);
-                    Game game = gameRepository.findFirstByHomeTeamEqualsAndAwayTeamEqualsAndDateTimeIsBetween
-                            (homeTeam, awayTeam, localDateTime.minusMinutes(10), localDateTime.plusMinutes(10))
-                            .orElse(new Game(localDateTime, homeScore, awayScore, homeTeam, awayTeam, location, phase));
-                    game.setHomeTeamGoals(homeScore);
-                    game.setAwayTeamGoals(awayScore);
-                    game.setAwayTeam(awayTeam);
-                    game.setHomeTeam(homeTeam);
-                    game.setLocation(location);
-                    game.setPhase(phase);
-                    game.setDateTime(localDateTime);
-                    gameRepository.save(game);
-                }
+                this.parseGroupTable(group, countGroups);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void scrapeFinal() {
+        Document doc = null;
+        try {
+            doc = Jsoup.connect(WIKIPEDIA_SEARCH_URL).userAgent("Mozilla/5.0").get();
+            Elements tableBodies = doc.select("table.wikitable[width=100%] > tbody");
+            Element tableBody = tableBodies.first();
+            Element teams = tableBody.child(0);
+            String homeTeamName = lookupTeamAbreviation(teams.child(0).ownText());
+            String awayTeamName = lookupTeamAbreviation(teams.child(1).ownText());
+            Element dateAndLocation = tableBody.child(1).select("tbody > tr").last();
+            String date = dateAndLocation.child(0).textNodes().get(0).getWholeText();
+            LocalDateTime localDateTime = this.parseDateTime(date);
+            String loc = lookupLocationAbreviation(dateAndLocation.child(0).child(0).ownText());
+            String phaseName = "Finale";
+            String groupName = "";
+            Integer homeScore = null;
+            Integer awayScore = null;
+
+            Location location = locationRepository.findFirstByNameEquals(loc).orElse(new Location(loc));
+            locationRepository.save(location);
+            Phase phase = phaseRepository.findFirstByNameEquals(phaseName).orElse(new Phase(phaseName));
+            phaseRepository.save(phase);
+            if (groupName.equals("")) {
+                groupName = "-";
+            }
+            TournamentGroup tournamentGroup = tournamentGroupRepository.findByNameEquals(groupName)
+                    .orElse(new TournamentGroup(groupName));
+            tournamentGroupRepository.save(tournamentGroup);
+            TournamentTeam homeTeam = tournamentTeamRepository.findTournamentTeamByNameEquals(homeTeamName)
+                    .orElse(new TournamentTeam(homeTeamName, tournamentGroup));
+            tournamentTeamRepository.save(homeTeam);
+            TournamentTeam awayTeam = tournamentTeamRepository.findTournamentTeamByNameEquals(awayTeamName)
+                    .orElse(new TournamentTeam(awayTeamName, tournamentGroup));
+            tournamentTeamRepository.save(awayTeam);
+            Game game = gameRepository.findFirstByHomeTeamEqualsAndAwayTeamEqualsAndDateTimeIsBetween
+                    (homeTeam, awayTeam, localDateTime.minusMinutes(10), localDateTime.plusMinutes(10))
+                    .orElse(new Game(localDateTime, homeScore, awayScore, homeTeam, awayTeam, location, phase));
+            game.setHomeTeamGoals(homeScore);
+            game.setAwayTeamGoals(awayScore);
+            game.setAwayTeam(awayTeam);
+            game.setHomeTeam(homeTeam);
+            game.setLocation(location);
+            game.setPhase(phase);
+            game.setDateTime(localDateTime);
+            gameRepository.save(game);
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void scrapeSmallFinal() {
+        Document doc = null;
+        try {
+            doc = Jsoup.connect(WIKIPEDIA_SEARCH_URL).userAgent("Mozilla/5.0").get();
+            Element table = doc.select("h3 > span#Spiel_um_Platz_3").parents().get(0).nextElementSibling();
+            Element tableBody = table.child(0);
+            this.parseGroupTable(tableBody, 11);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void parseGroupTable(Element group, int countGroups) {
+        for (int i = 0; i < group.children().size(); i++) {
+            Element gameDetails = group.child(i).child(0);
+            i++; // Move index to teams and result row
+            Element teamsAndResult = group.child(i);
+            this.parseGameInTable(gameDetails, teamsAndResult, countGroups);
+        }
+    }
+
+    private void parseGameInTable(Element gameDetails, Element teamsAndResult, int countGroups) {
+        String detailsString = gameDetails.textNodes().get(0).text();
+        String loc = this.parseLocation(gameDetails);
+        LocalDateTime localDateTime = this.parseDateTime(detailsString);
+        String groupName = this.getGroupName(countGroups);
+        String phaseName = this.getPhaseName(countGroups);
+        String homeTeamName = lookupTeamAbreviation(teamsAndResult.child(0).ownText());
+        String awayTeamName = lookupTeamAbreviation(teamsAndResult.child(2).ownText());
+        Tuple<Integer, Integer> score = this.parseScore(teamsAndResult.child(3).ownText());
+        Integer homeScore = score.left;
+        Integer awayScore = score.right;
+
+        Location location = locationRepository.findFirstByNameEquals(loc).orElse(new Location(loc));
+        locationRepository.save(location);
+        Phase phase = phaseRepository.findFirstByNameEquals(phaseName).orElse(new Phase(phaseName));
+        phaseRepository.save(phase);
+        if (groupName.equals("")) {
+            groupName = "-";
+        }
+        TournamentGroup tournamentGroup = tournamentGroupRepository.findByNameEquals(groupName)
+                .orElse(new TournamentGroup(groupName));
+        tournamentGroupRepository.save(tournamentGroup);
+        TournamentTeam homeTeam = tournamentTeamRepository.findTournamentTeamByNameEquals(homeTeamName)
+                .orElse(new TournamentTeam(homeTeamName, tournamentGroup));
+        tournamentTeamRepository.save(homeTeam);
+        TournamentTeam awayTeam = tournamentTeamRepository.findTournamentTeamByNameEquals(awayTeamName)
+                .orElse(new TournamentTeam(awayTeamName, tournamentGroup));
+        tournamentTeamRepository.save(awayTeam);
+        Game game = gameRepository.findFirstByHomeTeamEqualsAndAwayTeamEqualsAndDateTimeIsBetween
+                (homeTeam, awayTeam, localDateTime.minusMinutes(10), localDateTime.plusMinutes(10))
+                .orElse(new Game(localDateTime, homeScore, awayScore, homeTeam, awayTeam, location, phase));
+        game.setHomeTeamGoals(homeScore);
+        game.setAwayTeamGoals(awayScore);
+        game.setAwayTeam(awayTeam);
+        game.setHomeTeam(homeTeam);
+        game.setLocation(location);
+        game.setPhase(phase);
+        game.setDateTime(localDateTime);
+        gameRepository.save(game);
+    }
+
+    private LocalDateTime parseDateTime(String date) {
+        int day = Integer.parseInt(date.split(" ")[1].replace(".", ""));
+        String monthStr = date.split(" ")[2];
+        int month = this.month.getOrDefault(monthStr, 6);
+        int year = Integer.parseInt(date.split(" ")[3].replace(",", ""));
+        String time = date.split(" ")[4].replace("(", "");
+        int hour = Integer.parseInt(time.split(":")[0]);
+        int minute = Integer.parseInt(time.split(":")[1]);
+        LocalDateTime localDateTime = LocalDateTime.now();
+        localDateTime = localDateTime.withDayOfMonth(day)
+                .withMonth(month)
+                .withYear(year)
+                .withHour(hour)
+                .withMinute(minute)
+                .withSecond(0)
+                .withNano(0);
+        return localDateTime;
+    }
+
+    private String parseLocation(Element gameDetails) {
+        String detailsString = gameDetails.textNodes().get(0).text();
+        String loc;
+        if (gameDetails.childNodeSize() == 1) {
+            String[] splited = detailsString.split(" ");
+            if (splited.length == 9) { // Kaliningrad is in the same timezone as MESZ
+                loc = splited[8];
+            } else {
+                loc = splited[10];
+            }
+        } else {
+            loc = gameDetails.child(0).ownText();
+        }
+        return lookupLocationAbreviation(loc);
+    }
+
+    private String getPhaseName(int countGroups) {
+        String phaseName = "Gruppenphase";
+        switch (countGroups) {
+            case 8:
+                phaseName = "Achtelfinale";
+                break;
+            case 9:
+                phaseName = "Viertelfinale";
+                break;
+            case 10:
+                phaseName = "Halbfinale";
+                break;
+            case 11:
+                phaseName = "Spiel um Platz 3";
+                break;
+        }
+        return phaseName;
+    }
+
+    private String getGroupName(int countGroups) {
+        String groupName = "A";
+        switch (countGroups) {
+            case 1:
+                groupName = "B";
+                break;
+            case 2:
+                groupName = "C";
+                break;
+            case 3:
+                groupName = "D";
+                break;
+            case 4:
+                groupName = "E";
+                break;
+            case 5:
+                groupName = "F";
+                break;
+            case 6:
+                groupName = "G";
+                break;
+            case 7:
+                groupName = "H";
+                break;
+        }
+        return groupName;
+    }
+
+    private Tuple<Integer, Integer> parseScore(String score) {
+        String home = score.split(":")[0];
+        String away = score.split(":")[1];
+        Integer homeScore = null;
+        Integer awayScore = null;
+        if (!home.contains("-")) {
+            homeScore = Integer.parseInt(home);
+        }
+        if (!away.contains("-")) {
+            awayScore = Integer.parseInt(away);
+        }
+        return new Tuple<>(homeScore, awayScore);
     }
 
     private String lookupLocationAbreviation(String location) {
