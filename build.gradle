@@ -46,4 +46,6 @@ dependencies {
     compile group: 'de.mkammerer', name: 'argon2-jvm', version: '2.1'
     compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.6'
     compile group: 'org.ehcache', name: 'ehcache', version: '3.5.2'
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.11.3'
+
 }
