@@ -9,12 +9,20 @@ import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.persistance.RoleRepository;
 import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
 import ch.fhnw.wodss.tippspiel.security.Argon2PasswordEncoder;
+import ch.fhnw.wodss.tippspiel.util.GMail;
+import ch.fhnw.wodss.tippspiel.util.RandomString;
+import com.google.api.services.gmail.Gmail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.naming.ServiceUnavailableException;
+import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -92,7 +100,8 @@ public class UserService {
             throw new IllegalActionException("User with email: " + restUserDTO.getEmail() + " already exists");
         }
         if (restUserDTO.getPassword() == null) throw new IllegalActionException("Please provide a password");
-        if (!this.isValidEmail(restUserDTO.getEmail())) throw new IllegalActionException("Please provide a valid email");
+        if (!this.isValidEmail(restUserDTO.getEmail()))
+            throw new IllegalActionException("Please provide a valid email");
         User user = new User();
         user.setName(restUserDTO.getName());
         user.setEmail(restUserDTO.getEmail());
@@ -124,7 +133,8 @@ public class UserService {
         Optional<User> userToUpdate = repository.findById(user.getId());
         if (userToUpdate.isPresent()) {
             userToUpdate.get().setName(restUserDTO.getName());
-            if (!isValidEmail(restUserDTO.getEmail())) throw new IllegalArgumentException("Please provida a valid email");
+            if (!isValidEmail(restUserDTO.getEmail()))
+                throw new IllegalArgumentException("Please provida a valid email");
             userToUpdate.get().setEmail(restUserDTO.getEmail());
             userToUpdate.get().setDailyResults(restUserDTO.isDailyResults());
             userToUpdate.get().setReminders(restUserDTO.isReminders());
@@ -143,7 +153,23 @@ public class UserService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public void resetPassword(User user) {
-        // Todo with email integration
+        RandomString randomString = new RandomString(12, new SecureRandom(), RandomString.alphanum);
+        String newPassword = randomString.nextString();
+        StringBuilder stringBuilder = new StringBuilder()
+                .append("Du hast ein neues Passwort angefordert. \n Dein neues Passwort lautet: ")
+                .append(newPassword)
+                .append("\nDieses Passwort ist absofort gültig.");
+        try {
+            User userToUpdate = repository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("Unable to find user to reset password"));
+            MimeMessage mimeMessage = GMail.createEmail(user.getEmail(), "tippspiel.wm18@gmail.com", "WM 2018 Tippspiel - Passwortreset", stringBuilder.toString());
+            Gmail service = GMail.getAuthorizedService().orElseThrow(() -> new ServiceUnavailableException("GMail service not available"));
+            GMail.sendMessage(service, "me", mimeMessage);
+            userToUpdate.setPassword(argon2PasswordEncoder.encode(newPassword));
+            repository.save(userToUpdate);
+
+        } catch (MessagingException | ServiceUnavailableException | IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private UserDTO convertUserToUserDTO(User user) {
