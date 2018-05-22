@@ -36,3 +36,4 @@ public class RandomString {
         this.symbols = symbols.toCharArray();
         this.buf = new char[length];
     }
+}
