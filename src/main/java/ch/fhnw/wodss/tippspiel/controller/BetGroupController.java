@@ -61,9 +61,6 @@ public class BetGroupController {
         return new ResponseEntity<>(betGroup, HttpStatus.OK);
     }
 
-    @Caching(put = {
-            @CachePut(value = "betGroupsName", key = "#restBetGroupDTO.name", unless = "#result.statusCode != 201")
-    })
     @PostMapping(produces = "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BetGroupDTO> addBetGroup(@Valid @RequestBody RestBetGroupDTO restBetGroupDTO, BindingResult result) {
@@ -75,7 +72,6 @@ public class BetGroupController {
     }
 
     @Caching(put = {
-            @CachePut(value = "betGroups", key = "#id", unless = "#result.statusCode != 201"),
             @CachePut(value = "betGroupsName", key = "#result.body.name", unless = "#result.statusCode != 201")
     })
     @PutMapping(value = "/{id}/addUser", produces = "application/json", consumes = "application/json")
