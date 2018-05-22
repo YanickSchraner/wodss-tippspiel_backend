@@ -41,6 +41,7 @@ public class BetGroupController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<UserAllBetGroupDTO>> getAllUsersInBetGroup(@PathVariable Long id) {
         List<UserAllBetGroupDTO> result = service.getAllUsersInBetGroup(id);
+        if (result.size() == 0) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
