@@ -140,14 +140,14 @@ public class BetControllerTest {
                 .build();
         BetDTO betDTO = new BetDTOBuilder()
                 .withId(1L)
-                .withBettedAwayTeamGoals(0)
-                .withBettedHomeTeamGoals(1)
+                .withBettedAwayTeamGoals(1)
+                .withBettedHomeTeamGoals(0)
                 .withScore(10)
                 .withGameId(1L)
                 .withUserId(1L)
                 .withUserName("Yanick")
-                .withActualAwayTeamGoals(0)
-                .withActualHomeTeamGoals(1)
+                .withActualAwayTeamGoals(1)
+                .withActualHomeTeamGoals(0)
                 .withHomeTeamId(1L)
                 .withAwayTeamId(1L)
                 .withLocation("Moskau")
@@ -158,7 +158,7 @@ public class BetControllerTest {
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(betDTO)))
+                .content(TestUtil.convertObjectToJsonBytes(restBetDTO)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.game_id", equalTo(1)))
                 .andExpect(jsonPath("$.bettedHomeTeamGoals", equalTo(0)))
@@ -234,12 +234,12 @@ public class BetControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     public void update_BetUpdated_ShouldReturnOk() throws Exception {
-        RestBetDTO restBet = new RestBetDTOBuilder()
+        RestBetDTO restBetDTO = new RestBetDTOBuilder()
                 .withGameId(1L)
-                .withHomeTeamGoals(0)
-                .withAwayTeamGoals(1)
+                .withHomeTeamGoals(1)
+                .withAwayTeamGoals(0)
                 .build();
-        BetDTO bet = new BetDTOBuilder()
+        BetDTO betDTO = new BetDTOBuilder()
                 .withId(1L)
                 .withBettedAwayTeamGoals(0)
                 .withBettedHomeTeamGoals(1)
@@ -254,27 +254,27 @@ public class BetControllerTest {
                 .withLocation("Moskau")
                 .withPhase("Final")
                 .build();
-        when(betServiceMock.updateBet(eq(1L), eq(restBet), any())).thenReturn(bet);
+        when(betServiceMock.updateBet(eq(1L), eq(restBetDTO), any())).thenReturn(betDTO);
         mockMvc.perform(put("/bets/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(bet)))
+                .content(TestUtil.convertObjectToJsonBytes(restBetDTO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", equalTo(1)))
                 .andExpect(jsonPath("$.homeTeamId", equalTo(1)))
                 .andExpect(jsonPath("$.awayTeamId", equalTo(1)))
-                .andExpect(jsonPath("$.bettedHomeTeamGoals", equalTo(0)))
-                .andExpect(jsonPath("$.bettedAwayTeamGoals", equalTo(1)))
-                .andExpect(jsonPath("$.actualHomeTeamGoals", equalTo(0)))
-                .andExpect(jsonPath("$.actualAwayTeamGoals", equalTo(1)))
+                .andExpect(jsonPath("$.bettedHomeTeamGoals", equalTo(1)))
+                .andExpect(jsonPath("$.bettedAwayTeamGoals", equalTo(0)))
+                .andExpect(jsonPath("$.actualHomeTeamGoals", equalTo(1)))
+                .andExpect(jsonPath("$.actualAwayTeamGoals", equalTo(0)))
                 .andExpect(jsonPath("$.score", equalTo(10)))
                 .andExpect(jsonPath("$.game_id", equalTo(1)))
                 .andExpect(jsonPath("$.user_id", equalTo(1)))
                 .andExpect(jsonPath("$.username", equalTo("Yanick")))
                 .andExpect(jsonPath("$.location", equalTo("Moskau")))
                 .andExpect(jsonPath("$.phase", equalTo("Final")));
-        Mockito.verify(betServiceMock, times(1)).updateBet(eq(1L), eq(restBet), any());
+        Mockito.verify(betServiceMock, times(1)).updateBet(eq(1L), eq(restBetDTO), any());
     }
 
     @Test
@@ -282,7 +282,6 @@ public class BetControllerTest {
     public void update_InvalidBetFormat_ShouldReturnBadRequest() throws Exception {
         RestBetDTO restBet = new RestBetDTOBuilder()
                 .withGameId(1L)
-                .withHomeTeamGoals(0)
                 .withAwayTeamGoals(1)
                 .build();
         BetDTO bet = new BetDTOBuilder()
@@ -313,45 +312,30 @@ public class BetControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     public void update_BetNotFound_ShouldReturnNotFound() throws Exception {
-        RestBetDTO restBet = new RestBetDTOBuilder()
+        RestBetDTO restBetDTO = new RestBetDTOBuilder()
                 .withGameId(1L)
                 .withHomeTeamGoals(0)
                 .withAwayTeamGoals(1)
                 .build();
-        BetDTO bet = new BetDTOBuilder()
-                .withId(1L)
-                .withBettedAwayTeamGoals(0)
-                .withBettedHomeTeamGoals(1)
-                .withScore(10)
-                .withGameId(1L)
-                .withUserId(1L)
-                .withUserName("Yanick")
-                .withActualAwayTeamGoals(0)
-                .withActualHomeTeamGoals(1)
-                .withHomeTeamId(1L)
-                .withAwayTeamId(1L)
-                .withLocation("Moskau")
-                .withPhase("Final")
-                .build();
-        when(betServiceMock.updateBet(eq(1L), eq(restBet), any())).thenThrow(new ResourceNotFoundException("Bet not found"));
+        when(betServiceMock.updateBet(eq(1L), eq(restBetDTO), any())).thenThrow(new ResourceNotFoundException("Bet not found"));
         mockMvc.perform(put("/bets/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(bet)))
+                .content(TestUtil.convertObjectToJsonBytes(restBetDTO)))
                 .andExpect(status().isNotFound());
-        Mockito.verify(betServiceMock, times(1)).updateBet(eq(1L), eq(restBet), any());
+        Mockito.verify(betServiceMock, times(1)).updateBet(eq(1L), eq(restBetDTO), any());
     }
 
     @Test
     @WithMockUser(username = "testUser", roles = {"UNVERIFIED"})
     public void update_asRoleUnverified_accessDenied() throws Exception {
-        RestBetDTO restBet = new RestBetDTOBuilder()
+        RestBetDTO restBetDTO = new RestBetDTOBuilder()
                 .withGameId(1L)
                 .withHomeTeamGoals(0)
                 .withAwayTeamGoals(1)
                 .build();
-        BetDTO bet = new BetDTOBuilder()
+        BetDTO betDTO = new BetDTOBuilder()
                 .withId(1L)
                 .withBettedAwayTeamGoals(0)
                 .withBettedHomeTeamGoals(1)
@@ -366,14 +350,14 @@ public class BetControllerTest {
                 .withLocation("Moskau")
                 .withPhase("Final")
                 .build();
-        when(betServiceMock.updateBet(eq(1L), eq(restBet), any())).thenReturn(bet);
+        when(betServiceMock.updateBet(eq(1L), eq(restBetDTO), any())).thenReturn(betDTO);
         mockMvc.perform(put("/bets/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(bet)))
+                .content(TestUtil.convertObjectToJsonBytes(restBetDTO)))
                 .andExpect(status().isForbidden());
-        Mockito.verify(betServiceMock, times(0)).updateBet(eq(1L), eq(restBet), any());
+        Mockito.verify(betServiceMock, times(0)).updateBet(eq(1L), eq(restBetDTO), any());
     }
 
     @Test
