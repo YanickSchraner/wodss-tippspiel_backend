@@ -22,7 +22,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users")
-@PreAuthorize("hasRole('USER')")
 public class UserController {
 
     private final UserService service;
