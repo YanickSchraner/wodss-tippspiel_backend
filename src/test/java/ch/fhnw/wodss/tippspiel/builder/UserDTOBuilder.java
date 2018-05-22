@@ -1,9 +1,9 @@
 package ch.fhnw.wodss.tippspiel.builder;
 
-import ch.fhnw.wodss.tippspiel.domain.Bet;
-import ch.fhnw.wodss.tippspiel.domain.BetGroup;
 import ch.fhnw.wodss.tippspiel.domain.Role;
-import ch.fhnw.wodss.tippspiel.domain.User;
+import ch.fhnw.wodss.tippspiel.dto.BetDTO;
+import ch.fhnw.wodss.tippspiel.dto.BetGroupDTO;
+import ch.fhnw.wodss.tippspiel.dto.UserDTO;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -11,68 +11,68 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class UserBuilder {
+public class UserDTOBuilder {
     Set<String> roles = new HashSet<>();
-    List<Bet> bets = new ArrayList<>();
-    List<BetGroup> betGroups = new ArrayList<>();
-    User user;
+    List<BetDTO> bets = new ArrayList<>();
+    List<BetGroupDTO> betGroups = new ArrayList<>();
+    UserDTO user;
 
-    public UserBuilder(){
-        user = new User();
+    public UserDTOBuilder(){
+        user = new UserDTO();
     }
 
-    public UserBuilder withId(long id){
+    public UserDTOBuilder withId(long id){
         user.setId(id);
         return this;
     }
 
-    public UserBuilder withName(String username) {
+    public UserDTOBuilder withName(String username) {
         user.setName(username);
         return this;
     }
 
-    public UserBuilder withRole(String role) {
+    public UserDTOBuilder withRole(String role) {
         roles.add(role);
         return this;
     }
 
-    public UserBuilder withPassword(String password) {
+    public UserDTOBuilder withPassword(String password) {
         user.setPassword(password);
         return this;
     }
 
-    public UserBuilder withEmail(String email){
+    public UserDTOBuilder withEmail(String email){
         user.setEmail(email);
         return this;
     }
 
-    public UserBuilder withBet(Bet bet){
+    public UserDTOBuilder withBet(BetDTO bet){
         bets.add(bet);
         return this;
     }
 
-    public UserBuilder withBetGroup(BetGroup betGroup){
+    public UserDTOBuilder withBetGroup(BetGroupDTO betGroup){
         betGroups.add(betGroup);
         return this;
     }
 
-    public UserBuilder withReminders(boolean reminders){
+    public UserDTOBuilder withReminders(boolean reminders){
         user.setReminders(reminders);
         return this;
     }
 
-    public UserBuilder withDailyResults(boolean dailyResults){
+    public UserDTOBuilder withDailyResults(boolean dailyResults){
         user.setDailyResults(dailyResults);
         return this;
     }
 
-    public User build() {
+    public UserDTO build() {
         Set<Role> roles = this.roles.stream().map(roleName -> {
             Role role = new Role();
             role.setName(roleName);
             return role;
         }).collect(Collectors.toSet());
-        user.setRoles(roles);
+        user.setRole(roles);
         user.setBetGroups(betGroups);
         user.setBets(bets);
         return user;
