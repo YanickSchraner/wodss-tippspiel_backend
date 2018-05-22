@@ -33,7 +33,6 @@ public class BetGroupController {
     }
 
     @GetMapping(produces = "application/json")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<BetGroupDTO>> getAllBetGroups() {
         return new ResponseEntity<>(service.getAllBetGroups(), HttpStatus.OK);
     }

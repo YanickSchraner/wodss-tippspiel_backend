@@ -1,6 +1,5 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
-import ch.fhnw.wodss.tippspiel.domain.Game;
 import ch.fhnw.wodss.tippspiel.dto.GameDTO;
 import ch.fhnw.wodss.tippspiel.dto.RestGameDTO;
 import ch.fhnw.wodss.tippspiel.service.GameService;
@@ -30,7 +29,6 @@ public class GameController {
     }
 
     @GetMapping(produces = "application/json")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<GameDTO>> getAllGames() {
         return new ResponseEntity<>(service.getAllGames(), HttpStatus.OK);
     }

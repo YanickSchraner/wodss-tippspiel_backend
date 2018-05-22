@@ -9,7 +9,6 @@ import ch.fhnw.wodss.tippspiel.service.BetService;
 import ch.fhnw.wodss.tippspiel.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +47,6 @@ public class UserController {
     }
 
     @GetMapping(value = "/ranking", produces = "application/json")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<UserRankingDTO>> getAllUsersForRanking() {
         return new ResponseEntity<>(service.getAllUsersForRanking(), HttpStatus.OK);
     }
