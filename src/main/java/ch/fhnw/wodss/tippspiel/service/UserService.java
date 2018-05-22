@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -91,6 +92,7 @@ public class UserService {
             throw new IllegalActionException("User with email: " + restUserDTO.getEmail() + " already exists");
         }
         if (restUserDTO.getPassword() == null) throw new IllegalActionException("Please provide a password");
+        if (!this.isValidEmail(restUserDTO.getEmail())) throw new IllegalActionException("Please provide a valid email");
         User user = new User();
         user.setName(restUserDTO.getName());
         user.setEmail(restUserDTO.getEmail());
@@ -122,12 +124,14 @@ public class UserService {
         Optional<User> userToUpdate = repository.findById(user.getId());
         if (userToUpdate.isPresent()) {
             userToUpdate.get().setName(restUserDTO.getName());
+            if (!isValidEmail(restUserDTO.getEmail())) throw new IllegalArgumentException("Please provida a valid email");
             userToUpdate.get().setEmail(restUserDTO.getEmail());
             userToUpdate.get().setDailyResults(restUserDTO.isDailyResults());
             userToUpdate.get().setReminders(restUserDTO.isReminders());
             if (restUserDTO.getNewPassword() != null) {
                 boolean correctPW = argon2PasswordEncoder.matches(userToUpdate.get().getPassword(), argon2PasswordEncoder.encode(restUserDTO.getPassword()));
                 if (!correctPW) throw new IllegalActionException("Operation failed.");
+                if (restUserDTO.getPassword().length() < 10) throw new IllegalActionException("Operation failed.");
                 userToUpdate.get().setPassword(argon2PasswordEncoder.encode(restUserDTO.getNewPassword()));
             }
             user = repository.save(userToUpdate.get());
@@ -156,6 +160,18 @@ public class UserService {
         userDTO.setDailyResults(user.isDailyResults());
         userDTO.setRole(user.getRoles());
         return userDTO;
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\." +
+                "[a-zA-Z0-9_+&*-]+)*@" +
+                "(?:[a-zA-Z0-9-]+\\.)+[a-z" +
+                "A-Z]{2,7}$";
+
+        Pattern pat = Pattern.compile(emailRegex);
+        if (email == null)
+            return false;
+        return pat.matcher(email).matches();
     }
 
 }
