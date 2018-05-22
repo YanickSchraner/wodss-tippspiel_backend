@@ -1,8 +1,6 @@
 package ch.fhnw.wodss.tippspiel.service;
 
-import ch.fhnw.wodss.tippspiel.domain.Bet;
 import ch.fhnw.wodss.tippspiel.domain.TournamentGroup;
-import ch.fhnw.wodss.tippspiel.dto.BetDTO;
 import ch.fhnw.wodss.tippspiel.dto.RestTournamentGroupDTO;
 import ch.fhnw.wodss.tippspiel.dto.TournamentGroupDTO;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
@@ -90,6 +88,6 @@ public class TournamentGroupService {
         TournamentGroupDTO tournamentGroupDTO = new TournamentGroupDTO();
         tournamentGroupDTO.setId(tournamentGroup.getId());
         tournamentGroupDTO.setName(tournamentGroup.getName());
-        return new TournamentGroupDTO();
+        return tournamentGroupDTO;
     }
 }

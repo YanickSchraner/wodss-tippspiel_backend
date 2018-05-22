@@ -149,7 +149,7 @@ public class BetService {
         betDTO.setScore(bet.getScore());
         betDTO.setLocation(bet.getGame().getLocation().getName());
         betDTO.setPhase(bet.getGame().getPhase().getName());
-        return new BetDTO();
+        return betDTO;
     }
 
 }

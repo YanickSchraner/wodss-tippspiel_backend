@@ -1,6 +1,5 @@
 package ch.fhnw.wodss.tippspiel.service;
 
-import ch.fhnw.wodss.tippspiel.domain.TournamentGroup;
 import ch.fhnw.wodss.tippspiel.domain.TournamentTeam;
 import ch.fhnw.wodss.tippspiel.dto.RestTournamentTeamDTO;
 import ch.fhnw.wodss.tippspiel.dto.TournamentTeamDTO;
@@ -92,7 +91,7 @@ public class TournamentTeamService {
         TournamentTeamDTO tournamentTeamDTO = new TournamentTeamDTO();
         tournamentTeamDTO.setName(tournamentTeam.getName());
         tournamentTeamDTO.setTournamentGroupName(tournamentTeam.getGroup().getName());
-        return new TournamentTeamDTO();
+        return tournamentTeamDTO;
     }
 
 }

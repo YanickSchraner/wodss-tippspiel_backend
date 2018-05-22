@@ -1,7 +1,6 @@
 package ch.fhnw.wodss.tippspiel.service;
 
 import ch.fhnw.wodss.tippspiel.domain.Game;
-import ch.fhnw.wodss.tippspiel.domain.TournamentTeam;
 import ch.fhnw.wodss.tippspiel.dto.GameDTO;
 import ch.fhnw.wodss.tippspiel.dto.RestGameDTO;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
@@ -128,7 +127,7 @@ public class GameService {
         gameDTO.setPhaseName(game.getPhase().getName());
         gameDTO.setHomeTeamGoals(game.getHomeTeamGoals());
         gameDTO.setAwayTeamGoals(game.getAwayTeamGoals());
-        return new GameDTO();
+        return gameDTO;
     }
 
 }
