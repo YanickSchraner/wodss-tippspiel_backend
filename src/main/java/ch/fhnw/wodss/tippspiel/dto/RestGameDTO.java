@@ -16,19 +16,19 @@ public class RestGameDTO {
     @JsonProperty("homeTeam_id")
     @NotNull
     @Min(0)
-    private long homeTeamId;
+    private Long homeTeamId;
     @JsonProperty("awayTeam_id")
     @NotNull
     @Min(0)
-    private long awayTeamId;
+    private Long awayTeamId;
     @JsonProperty("location_id")
     @NotNull
     @Min(0)
-    private long locationId;
+    private Long locationId;
     @JsonProperty("phase_id")
     @NotNull
     @Min(0)
-    private long phaseId;
+    private Long phaseId;
     @JsonProperty("date")
     @NotNull
     private String date;

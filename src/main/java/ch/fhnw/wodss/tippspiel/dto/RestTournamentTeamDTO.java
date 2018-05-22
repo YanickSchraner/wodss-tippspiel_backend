@@ -19,6 +19,6 @@ public class RestTournamentTeamDTO {
     @JsonProperty("tournamentGroup_id")
     @NotNull
     @Min(0)
-    private long tournamentGroupId;
+    private Long tournamentGroupId;
 
 }
