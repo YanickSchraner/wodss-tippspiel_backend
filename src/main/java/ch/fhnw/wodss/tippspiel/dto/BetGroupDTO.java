@@ -1,6 +1,5 @@
 package ch.fhnw.wodss.tippspiel.dto;
 
-import ch.fhnw.wodss.tippspiel.domain.User;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -20,7 +19,7 @@ public class BetGroupDTO {
     private String name;
 
     @JsonProperty("score")
-    private int score;
+    private Integer score;
 
     @JsonProperty("user_ids")
     private List<Long> userIds;

@@ -27,11 +27,11 @@ public class BetDTO {
     @JsonProperty("bettedAwayTeamGoals")
     private int bettedAwayTeamGoals;
     @JsonProperty("actualHomeTeamGoals")
-    private int actualHomeTeamGoals;
+    private Integer actualHomeTeamGoals;
     @JsonProperty("actualAwayTeamGoals")
-    private int actualAwayTeamGoals;
+    private Integer actualAwayTeamGoals;
     @JsonProperty("score")
-    private int score;
+    private Integer score;
     @JsonProperty("location")
     private String location;
     @JsonProperty("phase")

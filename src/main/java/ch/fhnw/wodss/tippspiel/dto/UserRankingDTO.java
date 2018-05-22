@@ -17,6 +17,6 @@ public class UserRankingDTO {
     private String name;
 
     @JsonProperty("score")
-    private int score;
+    private Integer score;
 
 }
