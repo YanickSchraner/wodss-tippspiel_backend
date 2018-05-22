@@ -8,13 +8,15 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
 @Component
-public class GoogleResultScraper {
+public class WikipediaScraper {
 
     private static final String WIKIPEDIA_SEARCH_URL = "https://de.wikipedia.org/wiki/Fu%C3%9Fball-Weltmeisterschaft_2018";
     private HashMap<String, String> teams = new HashMap<>();
@@ -27,7 +29,7 @@ public class GoogleResultScraper {
     private TournamentGroupRepository tournamentGroupRepository;
 
     @Autowired
-    public GoogleResultScraper(GameRepository gameRepository, LocationRepository locationRepository, PhaseRepository phaseRepository, TournamentTeamRepository tournamentTeamRepository, TournamentGroupRepository tournamentGroupRepository) {
+    public WikipediaScraper(GameRepository gameRepository, LocationRepository locationRepository, PhaseRepository phaseRepository, TournamentTeamRepository tournamentTeamRepository, TournamentGroupRepository tournamentGroupRepository) {
         this.gameRepository = gameRepository;
         this.locationRepository = locationRepository;
         this.phaseRepository = phaseRepository;
@@ -69,15 +71,15 @@ public class GoogleResultScraper {
 
         locations.put("Moskau", "mos");
         locations.put("Jekaterinburg", "jek");
-        locations.put("Sankt Petersburg", "san");
-        locations.put("Rostow am Don", "ros");
+        locations.put("Sankt", "san");
+        locations.put("Rostow", "ros");
         locations.put("Samara", "sam");
         locations.put("Wolgograd", "wol");
         locations.put("Sotschi", "sot");
         locations.put("Kasan", "kas");
         locations.put("Saransk", "sar");
         locations.put("Kaliningrad", "kal");
-        locations.put("Nischni Nowgorod", "nis");
+        locations.put("Nischni", "nis");
 
         month.put("Januar", 1);
         month.put("Februar", 2);
@@ -93,32 +95,45 @@ public class GoogleResultScraper {
         month.put("Dezember", 12);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public void scrape() {
         Document doc = null;
         try {
             doc = Jsoup.connect(WIKIPEDIA_SEARCH_URL).userAgent("Mozilla/5.0").get();
             Elements groups = doc.select("table.wikitable.zebra.hintergrundfarbe5 > tbody");
-            int countGroups = 0;
-            for (Element group : groups) {
-                countGroups++;
-                for (int i = 0; i < group.childNodeSize(); i++) {
+            for (int countGroups = 0; countGroups < groups.size(); countGroups++) {
+                Element group = groups.get(countGroups);
+                for (int i = 0; i < group.children().size(); i++) {
                     Element gameDetails = group.child(i).child(0);
-                    String dateTime = gameDetails.textNodes().get(0).text();
-                    LocalDateTime localDateTime = LocalDateTime.now();
-                    int day = Integer.parseInt(dateTime.split(" ")[1].substring(0, 1));
-                    String monthStr = dateTime.split(" ")[2];
+                    String detailsString = gameDetails.textNodes().get(0).text();
+                    String loc = "";
+                    if (gameDetails.childNodeSize() == 1) {
+                        String[] splitted = detailsString.split(" ");
+                        if (splitted.length == 9) { // Kaliningrad is in the same timezone as MESZ
+                            loc = splitted[8];
+                        } else {
+                            loc = splitted[10];
+                        }
+                        loc = lookupLocationAbreviation(loc);
+                    } else {
+                        loc = gameDetails.child(0).ownText();
+                        loc = lookupLocationAbreviation(loc);
+                    }
+                    int day = Integer.parseInt(detailsString.split(" ")[1].replace(".", ""));
+                    String monthStr = detailsString.split(" ")[2];
                     int month = this.month.getOrDefault(monthStr, 6);
-                    int year = Integer.parseInt(dateTime.split(" ")[3].replace(",",""));
-                    String time = dateTime.split(" ")[5].replace("(", "");
+                    int year = Integer.parseInt(detailsString.split(" ")[3].replace(",", ""));
+                    String time = detailsString.split(" ")[4].replace("(", "");
                     int hour = Integer.parseInt(time.split(":")[0]);
                     int minute = Integer.parseInt(time.split(":")[1]);
-                    localDateTime.withDayOfMonth(day)
+                    LocalDateTime localDateTime = LocalDateTime.now();
+                    localDateTime = localDateTime.withDayOfMonth(day)
                             .withMonth(month)
                             .withYear(year)
                             .withHour(hour)
-                            .withMinute(minute);
-                    String loc = gameDetails.child(0).ownText();
-                    loc = lookupLocationAbreviation(loc);
+                            .withMinute(minute)
+                            .withSecond(0)
+                            .withNano(0);
                     i++; // Move index to teams and result row
                     Element teamsAndResult = group.child(i);
                     String homeTeamName = teamsAndResult.child(0).ownText();
@@ -128,55 +143,51 @@ public class GoogleResultScraper {
                     String score = teamsAndResult.child(3).ownText();
                     String home = score.split(":")[0];
                     String away = score.split(":")[1];
-                    Integer homeScore;
-                    Integer awayScore;
-                    if (home.equals("-")) {
-                        homeScore = null;
-                    } else {
+                    Integer homeScore = null;
+                    Integer awayScore = null;
+                    if (!home.contains("-")) {
                         homeScore = Integer.parseInt(home);
                     }
-                    if (away.equals("-")) {
-                        awayScore = null;
-                    } else {
-                        awayScore = Integer.parseInt(home);
+                    if (!away.contains("-")) {
+                        awayScore = Integer.parseInt(away);
                     }
-                    String phaseName = "";
+                    String phaseName = "Gruppenphase";
                     String groupName = "";
                     switch (countGroups) {
-                        case 1:
+                        case 0:
                             groupName = "A";
                             break;
-                        case 2:
+                        case 1:
                             groupName = "B";
                             break;
-                        case 3:
+                        case 2:
                             groupName = "C";
                             break;
-                        case 4:
+                        case 3:
                             groupName = "D";
                             break;
-                        case 5:
+                        case 4:
                             groupName = "E";
                             break;
-                        case 6:
+                        case 5:
                             groupName = "F";
                             break;
-                        case 7:
+                        case 6:
                             groupName = "G";
                             break;
-                        case 8:
+                        case 7:
                             groupName = "H";
                             break;
-                        case 9:
+                        case 8:
                             phaseName = "Achtelfinale";
                             break;
-                        case 10:
+                        case 9:
                             phaseName = "Viertelfinale";
                             break;
-                        case 11:
+                        case 10:
                             phaseName = "Halbfinale";
                             break;
-                        case 12:
+                        case 11:
                             phaseName = "Spiel um Platz 3";
                             break;
                         default:
@@ -188,6 +199,9 @@ public class GoogleResultScraper {
                     locationRepository.save(location);
                     Phase phase = phaseRepository.findFirstByNameEquals(phaseName).orElse(new Phase(phaseName));
                     phaseRepository.save(phase);
+                    if (groupName.equals("")) {
+                        groupName = "-";
+                    }
                     TournamentGroup tournamentGroup = tournamentGroupRepository.findByNameEquals(groupName)
                             .orElse(new TournamentGroup(groupName));
                     tournamentGroupRepository.save(tournamentGroup);
@@ -197,7 +211,8 @@ public class GoogleResultScraper {
                     TournamentTeam awayTeam = tournamentTeamRepository.findTournamentTeamByNameEquals(awayTeamName)
                             .orElse(new TournamentTeam(awayTeamName, tournamentGroup));
                     tournamentTeamRepository.save(awayTeam);
-                    Game game = gameRepository.findFirstByHomeTeamEqualsAndAwayTeamEqualsAndDateTimeEquals(homeTeam, awayTeam, localDateTime)
+                    Game game = gameRepository.findFirstByHomeTeamEqualsAndAwayTeamEqualsAndDateTimeIsBetween
+                            (homeTeam, awayTeam, localDateTime.minusMinutes(10), localDateTime.plusMinutes(10))
                             .orElse(new Game(localDateTime, homeScore, awayScore, homeTeam, awayTeam, location, phase));
                     game.setHomeTeamGoals(homeScore);
                     game.setAwayTeamGoals(awayScore);
