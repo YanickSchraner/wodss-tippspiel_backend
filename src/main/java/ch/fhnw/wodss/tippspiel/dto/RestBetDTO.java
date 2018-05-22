@@ -16,14 +16,14 @@ public class RestBetDTO {
     @JsonProperty("game_id")
     @NotNull
     @Min(0)
-    private long gameId;
+    private Long gameId;
     @JsonProperty("homeTeamGoals")
     @NotNull
     @Min(0)
-    private int homeTeamGoals;
+    private Integer homeTeamGoals;
     @JsonProperty("awayTeamGoals")
     @NotNull
     @Min(0)
-    private int awayTeamGoals;
+    private Integer awayTeamGoals;
 
 }

@@ -1,6 +1,5 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
-import ch.fhnw.wodss.tippspiel.domain.TournamentGroup;
 import ch.fhnw.wodss.tippspiel.dto.RestTournamentGroupDTO;
 import ch.fhnw.wodss.tippspiel.dto.TournamentGroupDTO;
 import ch.fhnw.wodss.tippspiel.service.TournamentGroupService;
@@ -53,7 +52,6 @@ public class TournamentGroupController {
     }
 
     @Caching(put = {
-            @CachePut(value = "tournametGroups", key = "#tournamentGroup.id", unless = "#result.statusCode != 201"),
             @CachePut(value = "tournametGroupsName", condition = "#tournamentGroup.name != null", key = "#tournamentGroup.name", unless = "#result.statusCode != 201")
     })
     @PostMapping(produces = "application/json", consumes = "application/json")
@@ -67,7 +65,6 @@ public class TournamentGroupController {
     }
 
     @Caching(put = {
-            @CachePut(value = "tournametGroups", key = "#tournamentGroup.id", unless = "#result.statusCode != 200"),
             @CachePut(value = "tournametGroupsName", key = "#tournamentGroup.name", unless = "#result.statusCode != 200")
     })
     @PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
