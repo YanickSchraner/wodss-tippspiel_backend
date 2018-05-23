@@ -47,18 +47,6 @@ public class UserService {
         this.roleRepository = roleRepository;
     }
 
-    private List<UserRankingDTO> createAllUsersForRankingDTOList(List<User> users) {
-        List<UserRankingDTO> dtos = new ArrayList<>();
-        for (User user : users) {
-            UserRankingDTO dto = new UserRankingDTO();
-            dto.setId(user.getId());
-            dto.setName(user.getName());
-            dto.setScore(user.getBets().stream().mapToInt(Bet::getScore).sum());
-            dtos.add(dto);
-        }
-        return dtos;
-    }
-
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<UserDTO> getAllUsers() {
         List<User> users = repository.findAll();
@@ -152,7 +140,7 @@ public class UserService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public void resetPassword(User user) {
+    public void resetPassword(String email) {
         RandomString randomString = new RandomString(12, new SecureRandom(), RandomString.alphanum);
         String newPassword = randomString.nextString();
         StringBuilder stringBuilder = new StringBuilder()
@@ -160,8 +148,8 @@ public class UserService {
                 .append(newPassword)
                 .append("\nDieses Passwort ist absofort gültig.");
         try {
-            User userToUpdate = repository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("Unable to find user to reset password"));
-            MimeMessage mimeMessage = GMail.createEmail(user.getEmail(), "tippspiel.wm18@gmail.com", "WM 2018 Tippspiel - Passwortreset", stringBuilder.toString());
+            User userToUpdate = repository.findUserByEmailEquals(email).orElseThrow(() -> new ResourceNotFoundException("Operation failed."));
+            MimeMessage mimeMessage = GMail.createEmail(email, "tippspiel.wm18@gmail.com", "WM 2018 Tippspiel - Passwortreset", stringBuilder.toString());
             Gmail service = GMail.getAuthorizedService().orElseThrow(() -> new ServiceUnavailableException("GMail service not available"));
             GMail.sendMessage(service, "me", mimeMessage);
             userToUpdate.setPassword(argon2PasswordEncoder.encode(newPassword));
@@ -170,6 +158,18 @@ public class UserService {
         } catch (MessagingException | ServiceUnavailableException | IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private List<UserRankingDTO> createAllUsersForRankingDTOList(List<User> users) {
+        List<UserRankingDTO> dtos = new ArrayList<>();
+        for (User user : users) {
+            UserRankingDTO dto = new UserRankingDTO();
+            dto.setId(user.getId());
+            dto.setName(user.getName());
+            dto.setScore(user.getBets().stream().mapToInt(Bet::getScore).sum());
+            dtos.add(dto);
+        }
+        return dtos;
     }
 
     public UserDTO convertUserToUserDTO(User user) {

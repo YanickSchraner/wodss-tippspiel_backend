@@ -67,10 +67,9 @@ public class UserController {
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/passwordReset")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> resetUserPassword(@AuthenticationPrincipal User user) {
-        service.resetPassword(user);
+    @PutMapping(value = "/passwordReset", consumes = "text/plain")
+    public ResponseEntity<String> resetUserPassword(@RequestBody String email) {
+        service.resetPassword(email);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
