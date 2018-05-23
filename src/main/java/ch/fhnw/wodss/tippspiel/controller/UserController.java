@@ -1,7 +1,6 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
 import ch.fhnw.wodss.tippspiel.domain.User;
-import ch.fhnw.wodss.tippspiel.dto.BetDTO;
 import ch.fhnw.wodss.tippspiel.dto.RestUserDTO;
 import ch.fhnw.wodss.tippspiel.dto.UserDTO;
 import ch.fhnw.wodss.tippspiel.dto.UserRankingDTO;
@@ -34,7 +33,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @RequestMapping(value = "/self", method = RequestMethod.GET)
+    @GetMapping(value = "/self")
     public ResponseEntity<User> getLoggedInUser(@AuthenticationPrincipal User user) {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
@@ -98,12 +97,6 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@PathVariable Long id, @AuthenticationPrincipal User user) {
         service.deleteUser(id, user);
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @GetMapping(value = "/bets", produces = "application/json")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<BetDTO>> getBetsForUser(@AuthenticationPrincipal User user) {
-        return new ResponseEntity<>(betService.getBetsForUser(user), HttpStatus.OK);
     }
 
 }
