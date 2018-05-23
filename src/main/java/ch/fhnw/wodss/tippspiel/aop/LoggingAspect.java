@@ -33,7 +33,4 @@ public class LoggingAspect {
         }
     }
 
-    // TODO log Mailer, API Connector and Scorer actions!
-
-
 }
