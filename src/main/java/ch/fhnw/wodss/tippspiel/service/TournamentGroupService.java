@@ -59,7 +59,7 @@ public class TournamentGroupService {
             throw new IllegalActionException("A tournament group with name: " + restTournamentGroup.getName() + " already exists.");
         }
         TournamentGroup tournamentGroup = new TournamentGroup(restTournamentGroup.getName());
-        tournamentGroupRepository.save(tournamentGroup);
+        tournamentGroup = tournamentGroupRepository.save(tournamentGroup);
         return convertTournementGroupToTournementGroupDTO(tournamentGroup);
     }
 
@@ -68,7 +68,7 @@ public class TournamentGroupService {
         TournamentGroup tournamentGroup = tournamentGroupRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No tournament group with id " + id + "found!"));
         tournamentGroup.setId(id);
         tournamentGroup.setName(restTournamentGroup.getName());
-        tournamentGroupRepository.save(tournamentGroup);
+        tournamentGroup = tournamentGroupRepository.save(tournamentGroup);
         return convertTournementGroupToTournementGroupDTO(tournamentGroup);
     }
 
