@@ -22,8 +22,10 @@ public class RestUserDTO {
     @Size(min = 10, max = 100)
     private String email;
     @JsonProperty("password")
+    @Size(min = 10, max = 100)
     private String password;
     @JsonProperty("newPassword")
+    @Size(min = 10, max = 100)
     private String newPassword;
     @JsonProperty("reminders")
     private boolean reminders;
