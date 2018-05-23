@@ -127,7 +127,7 @@ public class WikipediaScraper {
             String date = dateAndLocation.child(0).textNodes().get(0).getWholeText();
             LocalDateTime localDateTime = this.parseDateTime(date);
             String loc = lookupLocationAbreviation(dateAndLocation.child(0).child(0).ownText());
-            String phaseName = "Finale";
+            String phaseName = "finals";
             String groupName = "";
             Integer homeScore = null;
             Integer awayScore = null;
@@ -266,19 +266,19 @@ public class WikipediaScraper {
     }
 
     private String getPhaseName(int countGroups) {
-        String phaseName = "Gruppenphase";
+        String phaseName = "group";
         switch (countGroups) {
             case 8:
-                phaseName = "Achtelfinale";
+                phaseName = "ro16";
                 break;
             case 9:
-                phaseName = "Viertelfinale";
+                phaseName = "ro8";
                 break;
             case 10:
-                phaseName = "Halbfinale";
+                phaseName = "semifinals";
                 break;
             case 11:
-                phaseName = "Spiel um Platz 3";
+                phaseName = "gameforthird";
                 break;
         }
         return phaseName;
