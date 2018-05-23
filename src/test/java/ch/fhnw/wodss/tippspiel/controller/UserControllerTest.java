@@ -3,10 +3,7 @@ package ch.fhnw.wodss.tippspiel.controller;
 import ch.fhnw.wodss.tippspiel.TestUtil;
 import ch.fhnw.wodss.tippspiel.builder.*;
 import ch.fhnw.wodss.tippspiel.domain.User;
-import ch.fhnw.wodss.tippspiel.dto.BetDTO;
-import ch.fhnw.wodss.tippspiel.dto.BetGroupDTO;
-import ch.fhnw.wodss.tippspiel.dto.RestUserDTO;
-import ch.fhnw.wodss.tippspiel.dto.UserDTO;
+import ch.fhnw.wodss.tippspiel.dto.*;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.service.UserService;
 import org.junit.Before;
@@ -31,8 +28,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -745,6 +741,49 @@ public class UserControllerTest {
                 .andExpect(status().isForbidden());
         Mockito.verify(userServiceMock, times(0)).deleteUser(eq(1L), eq(user));
     }
+
+    @Test
+    @WithMockUser(username = "testUser", roles = {"UNVERIFIED"})
+    public void resetPassword() throws Exception {
+        mockMvc.perform(put("/users/passwordReset")
+                .content("yanick.schraner@students.fhnw.ch")
+                .headers(buildCORSHeaders())
+                .contentType("text/plain")).andExpect(status().isAccepted());
+        Mockito.verify(userServiceMock, times(1)).resetPassword("yanick.schraner@students.fhnw.ch");
+    }
+
+    @Test
+    @WithMockUser(username = "Yanick", roles = "USER")
+    public void getAllUsersForRanking() throws Exception {
+        List<UserRankingDTO> rankingDTOs = new ArrayList<>();
+        UserRankingDTO user1 = new UserRankingDTOBuilder()
+                .withId(1L)
+                .withName("Yanick")
+                .withScore(100)
+                .build();
+        UserRankingDTO user2 = new UserRankingDTOBuilder()
+                .withId(2L)
+                .withName("Tom")
+                .withScore(10)
+                .build();
+        rankingDTOs.add(user1);
+        rankingDTOs.add(user2);
+        when(userServiceMock.getAllUsersForRanking()).thenReturn(rankingDTOs);
+        mockMvc.perform(get("/users/ranking")
+                .headers(buildCORSHeaders())
+                .header("Accept", "application/json"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.[0].id", equalTo(1)))
+                .andExpect(jsonPath("$.[0].name", equalTo("Yanick")))
+                .andExpect(jsonPath("$.[0].score", equalTo(100)))
+                .andExpect(jsonPath("$.[1].id", equalTo(2)))
+                .andExpect(jsonPath("$.[1].name", equalTo("Tom")))
+                .andExpect(jsonPath("$.[1].score", equalTo(10)));
+        verify(userServiceMock, times(1)).getAllUsersForRanking();
+    }
+
+
+
 
     private HttpHeaders buildCORSHeaders() {
         HttpHeaders httpHeaders = new HttpHeaders();

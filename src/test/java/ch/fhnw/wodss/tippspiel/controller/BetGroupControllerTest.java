@@ -1,9 +1,14 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
+import ch.fhnw.wodss.tippspiel.TestUtil;
 import ch.fhnw.wodss.tippspiel.builder.BetGroupDTOBuilder;
+import ch.fhnw.wodss.tippspiel.builder.RestBetGroupDTOBuilder;
+import ch.fhnw.wodss.tippspiel.builder.UserAllBetGroupDTOBuilder;
 import ch.fhnw.wodss.tippspiel.builder.UserBuilder;
 import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.dto.BetGroupDTO;
+import ch.fhnw.wodss.tippspiel.dto.RestBetGroupDTO;
+import ch.fhnw.wodss.tippspiel.dto.UserAllBetGroupDTO;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
 import ch.fhnw.wodss.tippspiel.service.BetGroupService;
@@ -30,11 +35,9 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -198,45 +201,106 @@ public class BetGroupControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
+    public void getAllUsersInBetGroup_ok() throws Exception {
+        UserAllBetGroupDTO user1 = new UserAllBetGroupDTOBuilder()
+                .withId(1L)
+                .withName("Yanick")
+                .withScore(10)
+                .build();
+        UserAllBetGroupDTO user2 = new UserAllBetGroupDTOBuilder()
+                .withId(2L)
+                .withName("Tom")
+                .withScore(10)
+                .build();
+        List<UserAllBetGroupDTO> dtos = new ArrayList<>();
+        dtos.add(user1);
+        dtos.add(user2);
+        when(betGroupServiceMock.getAllUsersInBetGroup(1L)).thenReturn(dtos);
+        mockMvc.perform(get("/betgroups/{id}/users", 1L)
+                .headers(buildCORSHeaders())
+                .header("Accept", "application/json"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.[0].id", equalTo(1)))
+                .andExpect(jsonPath("$.[0].name", equalTo("Yanick")))
+                .andExpect(jsonPath("$.[0].score", equalTo(10)))
+                .andExpect(jsonPath("$.[1].id", equalTo(2)))
+                .andExpect(jsonPath("$.[1].name", equalTo("Tom")))
+                .andExpect(jsonPath("$.[1].score", equalTo(10)));
+        verify(betGroupServiceMock, times(1)).getAllUsersInBetGroup(eq(1L));
+    }
+
+    @Test
+    @WithMockUser(username = "test", roles = {"UNVERIFIED"})
+    public void getAllUsersInBetGroup_asRoleUnverified_accessDenied() throws Exception {
+        mockMvc.perform(get("/betgroups/{id}/users", 1L).headers(buildCORSHeaders()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    public void addBetGroup_ok() throws Exception {
+        BetGroupDTO betGroupDTO1 = new BetGroupDTOBuilder()
+                .withId(1L)
+                .withName("FHNW")
+                .withScore(220)
+                .build();
+        RestBetGroupDTO restBetGroupDTO1 = new RestBetGroupDTOBuilder()
+                .withName("FHNW")
+                .withPassword("passwordpassword")
+                .build();
+        when(betGroupServiceMock.createBetGroup(any())).thenReturn(betGroupDTO1);
+        mockMvc.perform(post("/betgroups")
+                .headers(buildCORSHeaders())
+                .header("accept", "application/json")
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(TestUtil.convertObjectToJsonBytes(restBetGroupDTO1)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id", equalTo(1)))
+                .andExpect(jsonPath("$.name", equalTo("FHNW")))
+                .andExpect(jsonPath("$.score", equalTo(220)));
+        verify(betGroupServiceMock, times(1)).createBetGroup(any());
+    }
+
+    @Test
+    @WithMockUser(username = "Yanick", roles = "USER")
+    public void addBetGroup_invalidDTO() throws Exception {
+        BetGroupDTO betGroupDTO1 = new BetGroupDTOBuilder()
+                .withId(1L)
+                .withScore(220)
+                .build();
+        RestBetGroupDTO restBetGroupDTO1 = new RestBetGroupDTOBuilder()
+                .withPassword("pwd")
+                .build();
+        mockMvc.perform(post("/betgroups")
+                .headers(buildCORSHeaders())
+                .header("accept", "application/json")
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(TestUtil.convertObjectToJsonBytes(restBetGroupDTO1)))
+                .andExpect(status().isBadRequest());
+        verify(betGroupServiceMock, times(0)).createBetGroup(any());
+    }
+
+    @Test
+    @WithMockUser(username = "test", roles = {"UNVERIFIED"})
+    public void addBetGroup_withRoleUNVERIFIED_isForbidden() throws Exception {
+        RestBetGroupDTO restBetGroupDTO1 = new RestBetGroupDTOBuilder()
+                .withPassword("pwd")
+                .build();
+        mockMvc.perform(post("/betgroups")
+                .headers(buildCORSHeaders())
+                .header("accept", "application/json")
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(TestUtil.convertObjectToJsonBytes(restBetGroupDTO1)))
+                .andExpect(status().isForbidden());
+        verify(betGroupServiceMock, times(0)).createBetGroup(any());
+    }
+
+    @Test
     @WithMockUser(username = "test", roles = {"UNVERIFIED"})
     public void findByName_asRoleUnverified_accessDenied() throws Exception {
         mockMvc.perform(get("/betgroups/name/{name}", 1L).headers(buildCORSHeaders()))
                 .andExpect(status().isForbidden());
-    }
-
-
-    @Test
-    @WithMockUser(roles = "USER")
-    public void addUser_UserAddedToBetGroup_ShouldReturnAdded() throws Exception {
-        List<Long> userIds = new ArrayList<>();
-        userIds.add(1L);
-        BetGroupDTO betGroupDTO = new BetGroupDTOBuilder()
-                .withId(1L)
-                .withName("FHNW")
-                .withScore(0)
-                .withUserIds(userIds)
-                .build();
-        User user = new UserBuilder()
-                .withId(2L)
-                .withName("Tom2")
-                .withRole("ROLE_USER")
-                .withPassword("passwordpassword")
-                .withEmail("tom2.ohme@gmx.ch")
-                .withReminders(true)
-                .withDailyResults(true)
-                .build();
-        when(betGroupServiceMock.addUser(eq(1L), eq("test123"), any())).thenReturn(betGroupDTO);
-        mockMvc.perform(post("/betgroupmemberships/{id}", 1L)
-                .headers(buildCORSHeaders())
-                .header("Accept", "application/json")
-                .contentType("text/plain")
-                .content("test123")
-        )
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id", equalTo(1)))
-                .andExpect(jsonPath("$.name", equalTo("FHNW")))
-                .andExpect(jsonPath("$.score", equalTo(0)));
-        Mockito.verify(betGroupServiceMock, times(1)).addUser(eq(1L), eq("test123"), any());
     }
 
 

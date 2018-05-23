@@ -25,11 +25,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -386,6 +388,56 @@ public class BetControllerTest {
                 .header("Accept", "application/json"))
                 .andExpect(status().isForbidden());
         Mockito.verify(betServiceMock, times(0)).deleteBet(eq(1L), any());
+    }
+
+    @Test
+    @WithMockUser(username = "Yanick", roles = "USER")
+    public void getBetsForUser() throws Exception {
+        BetDTO betDTO1 = new BetDTOBuilder()
+                .withId(1L)
+                .withBettedAwayTeamGoals(0)
+                .withBettedHomeTeamGoals(1)
+                .withScore(10)
+                .withGameId(1L)
+                .withUserId(1L)
+                .withUserName("Yanick")
+                .withActualAwayTeamGoals(0)
+                .withActualHomeTeamGoals(1)
+                .withHomeTeamId(1L)
+                .withAwayTeamId(1L)
+                .withLocation("Moskau")
+                .withPhase("Final")
+                .build();
+        BetDTO betDTO2 = new BetDTOBuilder()
+                .withId(2L)
+                .withBettedAwayTeamGoals(0)
+                .withBettedHomeTeamGoals(1)
+                .withScore(10)
+                .withGameId(2L)
+                .withUserId(1L)
+                .withUserName("Yanick")
+                .withActualAwayTeamGoals(0)
+                .withActualHomeTeamGoals(1)
+                .withHomeTeamId(1L)
+                .withAwayTeamId(1L)
+                .withLocation("Moskau")
+                .withPhase("Final")
+                .build();
+        List<BetDTO> betDTOs = new ArrayList<>();
+        betDTOs.add(betDTO1);
+        betDTOs.add(betDTO2);
+        when(betServiceMock.getBetsForUser(any())).thenReturn(betDTOs);
+        mockMvc.perform(get("/userbets")
+        .headers(buildCORSHeaders())
+        .header("Accept", "application/json"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.[0].id", equalTo(1)))
+                .andExpect(jsonPath("$.[0].username", equalTo("Yanick")))
+                .andExpect(jsonPath("$.[0].game_id", equalTo(1)))
+                .andExpect(jsonPath("$.[1].id", equalTo(2)))
+                .andExpect(jsonPath("$.[1].username", equalTo("Yanick")))
+                .andExpect(jsonPath("$.[1].game_id", equalTo(2)));
+        verify(betServiceMock, times(1)).getBetsForUser(any());
     }
 
 
