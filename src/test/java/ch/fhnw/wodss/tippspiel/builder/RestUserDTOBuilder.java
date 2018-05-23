@@ -24,6 +24,11 @@ public class RestUserDTOBuilder {
         return this;
     }
 
+    public RestUserDTOBuilder withNewPassword(String password) {
+        user.setNewPassword(password);
+        return this;
+    }
+
     public RestUserDTOBuilder withReminders(boolean reminders) {
         user.setReminders(reminders);
         return this;
