@@ -1,7 +1,9 @@
 package ch.fhnw.wodss.tippspiel.configuration;
 
 import ch.fhnw.wodss.tippspiel.domain.User;
+import ch.fhnw.wodss.tippspiel.dto.UserDTO;
 import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
+import ch.fhnw.wodss.tippspiel.service.UserService;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -19,6 +21,8 @@ import java.io.IOException;
 public class RESTAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    UserService userService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -26,7 +30,8 @@ public class RESTAuthenticationSuccessHandler implements AuthenticationSuccessHa
         String username = authentication.getName();
         Gson gson = new Gson();
         User user = userRepository.findUserByEmailEquals(username).orElse(new User());
-        response.getWriter().write(gson.toJson(user));
+        UserDTO userDTO = userService.convertUserToUserDTO(user);
+        response.getWriter().write(gson.toJson(userDTO));
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_OK);
     }

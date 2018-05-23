@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -92,7 +93,8 @@ public class BetGroupService {
         boolean containsUser = betGroupRepository.existsBetGroupsByMembersContaining(user);
         if (!containsUser) {
             if (betGroup.getPassword() != null && password != null) {
-                if (!argon2PasswordEncoder.matches(betGroup.getPassword(), password)) {
+                String pw = password.trim().replace("\"","");
+                if (!argon2PasswordEncoder.matches(pw, betGroup.getPassword())) {
                     throw new ResourceNotAllowedException("Wrong password for this bet group!");
                 }
             }
@@ -118,7 +120,7 @@ public class BetGroupService {
             List<User> users = betGroup.getMembers();
             users.remove(user);
             betGroup.setMembers(users);
-            betGroupRepository.save(betGroup);
+            betGroupRepository.saveAndFlush(betGroup);
             if (betGroup.getMembers().isEmpty()) {
                 deleteBetGroup(betGroupId);
             }
@@ -140,14 +142,12 @@ public class BetGroupService {
     }
 
     private void deleteBetGroup(Long id) {
-        if (betGroupRepository.hasMembers(id)) {
+        Optional<BetGroup> betGroup = betGroupRepository.findById(id);
+        if (!betGroup.isPresent()) throw new ResourceNotFoundException("Can't find a bet group with id: " + id);
+        if (!betGroup.get().getMembers().isEmpty()) {
             throw new IllegalActionException("Can't delete a bet group with bet group members");
         }
-        if (betGroupRepository.existsById(id)) {
-            betGroupRepository.deleteById(id);
-        } else {
-            throw new ResourceNotFoundException("Can't find a bet group with id: " + id);
-        }
+        betGroupRepository.deleteById(id);
     }
 
     protected BetGroupDTO convertBetGroupToBetGroupDTO(BetGroup betGroup) {

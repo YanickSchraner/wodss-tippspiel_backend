@@ -22,14 +22,14 @@ public class BetGroupMembershipController {
         this.service = service;
     }
 
-    @PostMapping(value = "/{id}", produces= "application/json", consumes = "application/json")
+    @PostMapping(value = "/{id}", produces= "application/json", consumes = "text/plain")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BetGroupDTO> addUserToBetGroup(@PathVariable Long id, @AuthenticationPrincipal User user, @RequestBody String password) {
         BetGroupDTO betGroup = service.addUser(id, password, user);
         return new ResponseEntity<>(betGroup, HttpStatus.CREATED);
     }
 
-    @DeleteMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
+    @DeleteMapping(value = "/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> removeUserFromBetGroup(@PathVariable Long id, @AuthenticationPrincipal User user) {
         service.removeUserFromBetGroup(id, user);

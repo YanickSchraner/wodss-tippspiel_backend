@@ -172,7 +172,7 @@ public class UserService {
         }
     }
 
-    private UserDTO convertUserToUserDTO(User user) {
+    public UserDTO convertUserToUserDTO(User user) {
         UserDTO userDTO = new UserDTO();
         userDTO.setId(user.getId());
         List<BetDTO> betDTOs = user.getBets().isEmpty() ? new ArrayList<>() : user.getBets().stream().map(betService::convertBetToBetDTO).collect(Collectors.toList());

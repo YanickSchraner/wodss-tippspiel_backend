@@ -19,7 +19,7 @@ public class ApiConnector {
         this.wikipediaScraper = wikipediaScraper;
     }
 
-    @Scheduled(cron = "0 */30 15-23 * * *")
+    @Scheduled(cron = "0 */30 9-23 * * *")
     public void updateGames() {
         wikipediaScraper.scrapeGroupToSemiFinal();
         wikipediaScraper.scrapeSmallFinal();

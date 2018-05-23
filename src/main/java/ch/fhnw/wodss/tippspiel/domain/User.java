@@ -26,8 +26,7 @@ public class User implements UserDetails {
 
     @Column
     @NotNull
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "user_group", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "betgroup_id"))
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "members")
     private List<BetGroup> betGroups;
 
     @Id
@@ -85,6 +84,20 @@ public class User implements UserDetails {
                     .forEach(authorities::add);
         }
         return authorities;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) return false;
+        if (other == this) return true;
+        if (!(other instanceof User))return false;
+        User otherUser = (User) other;
+        return otherUser.getId().equals(this.getId());
+    }
+
+    @Override
+    public String toString() {
+        return getUsername();
     }
 
     @Override
