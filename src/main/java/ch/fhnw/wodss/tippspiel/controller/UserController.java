@@ -79,7 +79,7 @@ public class UserController {
         if (result.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        if (!id.equals(user.getId())) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (user != null && !id.equals(user.getId())) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         UserDTO newUser = service.updateUser(user, restUserDTO);
         return new ResponseEntity<>(newUser, HttpStatus.OK);
     }

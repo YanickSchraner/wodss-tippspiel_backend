@@ -160,7 +160,7 @@ public class GameControllerTest {
     @WithMockUser(username = "test", roles = {"UNVERIFIED"})
     public void findAll_asRoleUnverified_accessDenied() throws Exception {
         mockMvc.perform(get("/games").headers(buildCORSHeaders()))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
     }
 
     @Test

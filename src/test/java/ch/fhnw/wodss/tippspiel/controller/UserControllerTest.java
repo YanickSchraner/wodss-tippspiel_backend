@@ -3,7 +3,10 @@ package ch.fhnw.wodss.tippspiel.controller;
 import ch.fhnw.wodss.tippspiel.TestUtil;
 import ch.fhnw.wodss.tippspiel.builder.*;
 import ch.fhnw.wodss.tippspiel.domain.User;
-import ch.fhnw.wodss.tippspiel.dto.*;
+import ch.fhnw.wodss.tippspiel.dto.BetDTO;
+import ch.fhnw.wodss.tippspiel.dto.BetGroupDTO;
+import ch.fhnw.wodss.tippspiel.dto.RestUserDTO;
+import ch.fhnw.wodss.tippspiel.dto.UserDTO;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.service.UserService;
 import org.junit.Before;
@@ -26,12 +29,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -320,7 +323,7 @@ public class UserControllerTest {
         RestUserDTO restUserDTO = new RestUserDTOBuilder()
                 .withName("Tom")
                 .withEmail("tom.ohme@gmx.ch")
-                .withPassword("test123")
+                .withPassword("test123test123test123")
                 .withReminders(true)
                 .withDailyResults(true)
                 .build();
@@ -367,7 +370,7 @@ public class UserControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", equalTo(1)))
                 .andExpect(jsonPath("$.name", equalTo("Tom")))
-                .andExpect(jsonPath("$.password", equalTo("test123")))
+                .andExpect(jsonPath("$.password", equalTo("test123test123test123")))
                 .andExpect(jsonPath("$.email", equalTo("tom.ohme@gmx.ch")));
         Mockito.verify(userServiceMock, times(1)).addUser(eq(restUserDTO));
     }
@@ -427,11 +430,11 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser(username = "testUser", roles = {"UNVERIFIED"})
-    public void create_asRoleUnverified_accessDenied() throws Exception {
+    public void create_asRoleUnverified_created() throws Exception {
         RestUserDTO restUserDTO = new RestUserDTOBuilder()
                 .withName("Tom")
                 .withEmail("tom.ohme@gmx.ch")
-                .withPassword("test123")
+                .withPassword("test123test123test123")
                 .withReminders(true)
                 .withDailyResults(true)
                 .build();
@@ -474,24 +477,24 @@ public class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
                 .content(TestUtil.convertObjectToJsonBytes(restUserDTO))
                 .headers(buildCORSHeaders()))
-                .andExpect(status().isForbidden());
-        Mockito.verify(userServiceMock, times(0)).addUser(eq(restUserDTO));
+                .andExpect(status().isCreated());
+        Mockito.verify(userServiceMock, times(1)).addUser(eq(restUserDTO));
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(roles = "USER")
     public void update_UserUpdated_ShouldReturnOk() throws Exception {
         User user = new UserBuilder()
                 .withId(1L)
                 .withName("Tom")
                 .withEmail("tom.ohme@gmx.ch")
-                .withPassword("test123")
+                .withPassword("test123test123test123")
                 .withRole("ROLE_USER")
                 .build();
         RestUserDTO restUserDTO = new RestUserDTOBuilder()
                 .withName("Tom")
                 .withEmail("tom2.ohme@gmx.ch")
-                .withPassword("test123")
+                .withPassword("test123test123test123")
                 .withReminders(true)
                 .withDailyResults(true)
                 .build();
@@ -529,7 +532,7 @@ public class UserControllerTest {
                 .withReminders(true)
                 .withDailyResults(true)
                 .build();
-        when(userServiceMock.updateUser(eq(user), eq(restUserDTO))).thenReturn(userDTO);
+        when(userServiceMock.updateUser(any(), any(RestUserDTO.class))).thenReturn(userDTO);
         mockMvc.perform(put("/users/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
@@ -538,9 +541,9 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", equalTo(1)))
                 .andExpect(jsonPath("$.name", equalTo("Tom")))
-                .andExpect(jsonPath("$.password", equalTo("test123")))
+                .andExpect(jsonPath("$.password", equalTo("test123test123test123")))
                 .andExpect(jsonPath("$.email", equalTo("tom2.ohme@gmx.ch")));
-        Mockito.verify(userServiceMock, times(1)).updateUser(eq(user), eq(restUserDTO));
+        Mockito.verify(userServiceMock, times(1)).updateUser(any(), any());
     }
 
     @Test
@@ -604,30 +607,30 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(roles = "USER")
     public void update_UserNotFound_ShouldReturnNotFound() throws Exception {
         User user = new UserBuilder()
                 .withId(1L)
                 .withName("Tom")
                 .withEmail("tom.ohme@gmx.ch")
-                .withPassword("test123")
+                .withPassword("test123test123test123")
                 .withRole("ROLE_USER")
                 .build();
         RestUserDTO restUserDTO = new RestUserDTOBuilder()
                 .withName("Tom")
                 .withEmail("tom2.ohme@gmx.ch")
-                .withPassword("test123")
+                .withPassword("test123test123test123")
                 .withReminders(true)
                 .withDailyResults(true)
                 .build();
-        when(userServiceMock.updateUser(eq(user), eq(restUserDTO))).thenThrow(new ResourceNotFoundException("User not found"));
+        when(userServiceMock.updateUser(any(), any())).thenThrow(new ResourceNotFoundException("User not found"));
         mockMvc.perform(put("/users/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(restUserDTO)))
                 .andExpect(status().isNotFound());
-        Mockito.verify(userServiceMock, times(1)).updateUser(eq(user), eq(restUserDTO));
+        Mockito.verify(userServiceMock, times(1)).updateUser(any(), any());
     }
 
     @Test
@@ -643,7 +646,7 @@ public class UserControllerTest {
         RestUserDTO restUserDTO = new RestUserDTOBuilder()
                 .withName("Tom")
                 .withEmail("tom2.ohme@gmx.ch")
-                .withPassword("test123")
+                .withPassword("test123test123test123")
                 .withReminders(true)
                 .withDailyResults(true)
                 .build();
@@ -692,7 +695,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(roles = "USER")
     public void delete_UserDeleted_ShouldReturnOk() throws Exception {
         User user = new UserBuilder()
                 .withId(1L)
@@ -705,11 +708,11 @@ public class UserControllerTest {
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json"))
                 .andExpect(status().isOk());
-        Mockito.verify(userServiceMock, times(1)).deleteUser(1L, user);
+        Mockito.verify(userServiceMock, times(1)).deleteUser(eq(1L), any());
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(roles = "USER")
     public void delete_UserNotFound_ShouldReturnNotFound() throws Exception {
         User user = new UserBuilder()
                 .withId(1L)
@@ -718,13 +721,12 @@ public class UserControllerTest {
                 .withPassword("test123")
                 .withRole("ROLE_USER")
                 .build();
-        Mockito.doThrow(new ResourceNotFoundException("Could not find User")).when(userServiceMock).
-                deleteUser(eq(1L), eq(user));
-        mockMvc.perform(delete("/users/{id}", 2L)
+        Mockito.doThrow(new ResourceNotFoundException("Could not find User")).when(userServiceMock).deleteUser(eq(1L), any());
+        mockMvc.perform(delete("/users/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json"))
                 .andExpect(status().isNotFound());
-        Mockito.verify(userServiceMock, times(1)).deleteUser(eq(1L), eq(user));
+        Mockito.verify(userServiceMock, times(1)).deleteUser(eq(1L), any());
     }
 
     @Test
