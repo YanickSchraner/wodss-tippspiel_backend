@@ -197,7 +197,11 @@ public class WikipediaScraper {
         String phaseName = this.getPhaseName(countGroups);
         String homeTeamName = lookupTeamAbreviation(teamsAndResult.child(0).ownText());
         String awayTeamName = lookupTeamAbreviation(teamsAndResult.child(2).ownText());
-        Tuple<Integer, Integer> score = this.parseScore(teamsAndResult.child(3).ownText());
+        String scoreText = teamsAndResult.child(3).ownText();
+        if (scoreText.equals("")) {
+            scoreText = teamsAndResult.child(3).child(0).ownText();
+        }
+        Tuple<Integer, Integer> score = this.parseScore(scoreText);
         Integer homeScore = score.left;
         Integer awayScore = score.right;
 
