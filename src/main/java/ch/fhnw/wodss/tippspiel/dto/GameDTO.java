@@ -30,5 +30,7 @@ public class GameDTO {
     private String date;
     @JsonProperty("time")
     private String time;
+    @JsonProperty("torunamentgroup")
+    private String tournamentGroup;
 
 }

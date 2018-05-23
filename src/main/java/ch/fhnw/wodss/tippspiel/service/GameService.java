@@ -127,6 +127,7 @@ public class GameService {
         gameDTO.setPhaseName(game.getPhase().getName());
         gameDTO.setHomeTeamGoals(game.getHomeTeamGoals());
         gameDTO.setAwayTeamGoals(game.getAwayTeamGoals());
+        gameDTO.setTournamentGroup(game.getHomeTeam().getGroup().getName());
         return gameDTO;
     }
 
