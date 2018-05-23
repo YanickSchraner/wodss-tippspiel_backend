@@ -1,9 +1,11 @@
 package ch.fhnw.wodss.tippspiel.controller;
 
-import ch.fhnw.wodss.tippspiel.builder.*;
-import ch.fhnw.wodss.tippspiel.domain.*;
-import ch.fhnw.wodss.tippspiel.dto.*;
+import ch.fhnw.wodss.tippspiel.builder.BetGroupDTOBuilder;
+import ch.fhnw.wodss.tippspiel.builder.UserBuilder;
+import ch.fhnw.wodss.tippspiel.domain.User;
+import ch.fhnw.wodss.tippspiel.dto.BetGroupDTO;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
+import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
 import ch.fhnw.wodss.tippspiel.service.BetGroupService;
 import ch.fhnw.wodss.tippspiel.service.UserService;
 import org.junit.Before;
@@ -23,21 +25,22 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class BetGroupControllerTest {
-
-    //TODO check tests
 
     @Value("${security.cors.allowedOrigins}")
     private String corsAllowedOrigins;
@@ -53,47 +56,17 @@ public class BetGroupControllerTest {
     @MockBean
     private UserService userService;
 
+    @MockBean
+    private UserRepository userRepository;
+
     @Before
     public void mockUserService() {
-        BetDTO betDTO = new BetDTOBuilder()
+        User user = new UserBuilder()
                 .withId(1L)
-                .withBettedAwayTeamGoals(0)
-                .withBettedHomeTeamGoals(1)
-                .withScore(10)
-                .withGameId(1L)
-                .withUserId(1L)
-                .withUserName("Tom")
-                .withActualAwayTeamGoals(0)
-                .withActualHomeTeamGoals(1)
-                .withHomeTeamId(1L)
-                .withAwayTeamId(1L)
-                .withLocation("Moskau")
-                .withPhase("Final")
+                .withName("Yanick")
+                .withEmail("yanick.schraner@students.fhnw.ch")
                 .build();
-        List<Long> ids = new ArrayList<>();
-        ids.add(1L);
-        BetGroupDTO betGroupDTO = new BetGroupDTOBuilder()
-                .withId(1L)
-                .withName("FHNW")
-                .withScore(0)
-                .withUserIds(ids)
-                .build();
-        UserDTO userDTO = new UserDTOBuilder()
-                .withId(1L)
-                .withName("Tom")
-                .withRole("ROLE_USER")
-                .withPassword("test123")
-                .withEmail("tom.ohme@gmx.ch")
-                .withBet(betDTO)
-                .withBetGroup(betGroupDTO)
-                .withReminders(true)
-                .withDailyResults(true)
-                .build();
-        List<UserDTO> userDTOS = new ArrayList<>();
-        userDTOS.add(userDTO);
-        ArrayList<User> users = new ArrayList<>();
-        users.add(new UserBuilder().withName("Tom").withRole("USER").withId(1L).build());
-        when(userService.getAllUsers()).thenReturn(userDTOS);
+        when(userRepository.findUserByEmailEquals(any())).thenReturn(Optional.of(user));
     }
 
     @Before
@@ -142,9 +115,9 @@ public class BetGroupControllerTest {
 
     @Test
     @WithMockUser(username = "test", roles = {"UNVERIFIED"})
-    public void findAll_asRoleUnverified_accessDenied() throws Exception {
+    public void findAll_asRoleUnverified_accessAllowed() throws Exception {
         mockMvc.perform(get("/betgroups").headers(buildCORSHeaders()))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -230,7 +203,7 @@ public class BetGroupControllerTest {
         mockMvc.perform(get("/betgroups/name/{name}", 1L).headers(buildCORSHeaders()))
                 .andExpect(status().isForbidden());
     }
-    /*
+
 
     @Test
     @WithMockUser(roles = "USER")
@@ -247,23 +220,25 @@ public class BetGroupControllerTest {
                 .withId(2L)
                 .withName("Tom2")
                 .withRole("ROLE_USER")
-                .withPassword("test123")
+                .withPassword("passwordpassword")
                 .withEmail("tom2.ohme@gmx.ch")
                 .withReminders(true)
                 .withDailyResults(true)
                 .build();
-        when(betGroupServiceMock.addUser(1L, user, "test123")).thenReturn(betGroupDTO);
-        mockMvc.perform(get("/betgroups/{id}/addUser", 2L)
+        when(betGroupServiceMock.addUser(eq(1L), eq("test123"), any())).thenReturn(betGroupDTO);
+        mockMvc.perform(post("/betgroupmemberships/{id}", 1L)
                 .headers(buildCORSHeaders())
                 .header("Accept", "application/json")
+                .contentType("text/plain")
+                .content("test123")
         )
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", equalTo(1)))
                 .andExpect(jsonPath("$.name", equalTo("FHNW")))
                 .andExpect(jsonPath("$.score", equalTo(0)));
-        Mockito.verify(betGroupServiceMock, times(1)).addUser(eq(1L), user, "test123");
+        Mockito.verify(betGroupServiceMock, times(1)).addUser(eq(1L), eq("test123"), any());
     }
-    */
+
 
     private HttpHeaders buildCORSHeaders() {
         HttpHeaders httpHeaders = new HttpHeaders();

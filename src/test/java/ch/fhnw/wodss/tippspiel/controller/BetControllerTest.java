@@ -2,9 +2,6 @@ package ch.fhnw.wodss.tippspiel.controller;
 
 import ch.fhnw.wodss.tippspiel.TestUtil;
 import ch.fhnw.wodss.tippspiel.builder.*;
-import ch.fhnw.wodss.tippspiel.domain.Bet;
-import ch.fhnw.wodss.tippspiel.domain.Game;
-import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.dto.BetDTO;
 import ch.fhnw.wodss.tippspiel.dto.RestBetDTO;
 import ch.fhnw.wodss.tippspiel.dto.UserDTO;
