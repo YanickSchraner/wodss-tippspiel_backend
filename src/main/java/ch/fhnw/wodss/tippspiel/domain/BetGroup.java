@@ -44,4 +44,13 @@ public class BetGroup {
         this.score = score;
         this.members = members;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) return false;
+        if (other == this) return true;
+        if (!(other instanceof BetGroup))return false;
+        BetGroup otherBetGroup = (BetGroup) other;
+        return otherBetGroup.getId().equals(this.getId());
+    }
 }

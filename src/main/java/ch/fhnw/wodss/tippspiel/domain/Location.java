@@ -28,4 +28,13 @@ public class Location {
     public Location(String name) {
         this.name = name;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) return false;
+        if (other == this) return true;
+        if (!(other instanceof Location))return false;
+        Location otherLocation = (Location) other;
+        return otherLocation.getId().equals(this.getId());
+    }
 }

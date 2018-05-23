@@ -28,4 +28,13 @@ public class Phase {
     public Phase(String name) {
         this.name = name;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) return false;
+        if (other == this) return true;
+        if (!(other instanceof Phase))return false;
+        Phase otherPhase = (Phase) other;
+        return otherPhase.getId().equals(this.getId());
+    }
 }

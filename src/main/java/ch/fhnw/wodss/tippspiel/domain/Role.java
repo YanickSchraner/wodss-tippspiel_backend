@@ -21,4 +21,13 @@ public class Role {
     public Role(String name) {
         this.name = name;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) return false;
+        if (other == this) return true;
+        if (!(other instanceof Role))return false;
+        Role otherRole = (Role) other;
+        return otherRole.getId().equals(this.getId());
+    }
 }

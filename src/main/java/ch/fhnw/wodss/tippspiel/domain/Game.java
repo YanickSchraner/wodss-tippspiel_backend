@@ -8,7 +8,6 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Data
 @NoArgsConstructor
@@ -62,6 +61,15 @@ public class Game {
         this.awayTeam = awayTeam;
         this.location = location;
         this.phase = phase;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) return false;
+        if (other == this) return true;
+        if (!(other instanceof Game))return false;
+        Game otherGame = (Game) other;
+        return otherGame.getId().equals(this.getId());
     }
 
 }

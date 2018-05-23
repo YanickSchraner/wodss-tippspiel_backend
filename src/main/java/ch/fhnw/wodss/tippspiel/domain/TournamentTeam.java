@@ -31,4 +31,13 @@ public class TournamentTeam {
         this.name = name;
         this.group = group;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) return false;
+        if (other == this) return true;
+        if (!(other instanceof TournamentTeam))return false;
+        TournamentTeam otherTournamentTeam = (TournamentTeam) other;
+        return otherTournamentTeam.getId().equals(this.getId());
+    }
 }
