@@ -32,12 +32,6 @@ public class UserController {
         this.betService = betService;
     }
 
-    @PreAuthorize("hasRole('USER')")
-    @GetMapping(value = "/self")
-    public ResponseEntity<User> getLoggedInUser(@AuthenticationPrincipal User user) {
-        return new ResponseEntity<>(user, HttpStatus.OK);
-    }
-
     @GetMapping(produces = "application/json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<UserDTO>> getAllUsers() {

@@ -16,7 +16,7 @@ public interface BetGroupRepository extends JpaRepository<BetGroup, Long> {
     @Query("SELECT b.members from BetGroup b where b.id = :betGroup")
     List<User> getUserInBetGroup(@Param("betGroup") Long betGroupId);
 
-    boolean existsBetGroupsByMembersContaining(Long userId);
+    boolean existsBetGroupsByMembersContaining(User user);
 
     @Query("SELECT count(betGroup.members) FROM BetGroup betGroup")
     boolean hasMembers(@Param("id") Long id);

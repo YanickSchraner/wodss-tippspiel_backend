@@ -84,12 +84,12 @@ public class BetGroupService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public BetGroupDTO addUser(Long betGroupId, User user, String password) {
+    public BetGroupDTO addUser(Long betGroupId, String password, User user) {
         userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find given user."));
         BetGroup betGroup = betGroupRepository.findById(betGroupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find bet group with id: " + betGroupId));
-        boolean containsUser = betGroupRepository.existsBetGroupsByMembersContaining(user.getId());
+        boolean containsUser = betGroupRepository.existsBetGroupsByMembersContaining(user);
         if (!containsUser) {
             if (betGroup.getPassword() != null && password != null) {
                 if (!argon2PasswordEncoder.matches(betGroup.getPassword(), password)) {
@@ -111,11 +111,17 @@ public class BetGroupService {
     public void removeUserFromBetGroup(Long betGroupId, User user) {
         userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find given user."));
-        betGroupRepository.findById(betGroupId)
+        BetGroup betGroup = betGroupRepository.findById(betGroupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find bet group with id: " + betGroupId));
-        boolean containsUser = betGroupRepository.existsBetGroupsByMembersContaining(user.getId());
+        boolean containsUser = betGroupRepository.existsBetGroupsByMembersContaining(user);
         if (containsUser) {
-            deleteBetGroup(betGroupId);
+            List<User> users = betGroup.getMembers();
+            users.remove(user);
+            betGroup.setMembers(users);
+            betGroupRepository.save(betGroup);
+            if (betGroup.getMembers().isEmpty()) {
+                deleteBetGroup(betGroupId);
+            }
         }
     }
 
@@ -133,8 +139,7 @@ public class BetGroupService {
         return convertBetGroupToBetGroupDTO(betGroup);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void deleteBetGroup(Long id) {
+    private void deleteBetGroup(Long id) {
         if (betGroupRepository.hasMembers(id)) {
             throw new IllegalActionException("Can't delete a bet group with bet group members");
         }

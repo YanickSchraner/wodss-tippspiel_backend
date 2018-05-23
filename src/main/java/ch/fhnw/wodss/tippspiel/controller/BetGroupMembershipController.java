@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,11 +24,8 @@ public class BetGroupMembershipController {
 
     @PostMapping(value = "/{id}", produces= "application/json", consumes = "application/json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BetGroupDTO> addUserToBetGroup(@PathVariable Long id, @RequestBody String password, @AuthenticationPrincipal User user, BindingResult result) {
-        if (result.hasErrors()) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        BetGroupDTO betGroup = service.addUser(id, user, password);
+    public ResponseEntity<BetGroupDTO> addUserToBetGroup(@PathVariable Long id, @AuthenticationPrincipal User user, @RequestBody String password) {
+        BetGroupDTO betGroup = service.addUser(id, password, user);
         return new ResponseEntity<>(betGroup, HttpStatus.CREATED);
     }
 

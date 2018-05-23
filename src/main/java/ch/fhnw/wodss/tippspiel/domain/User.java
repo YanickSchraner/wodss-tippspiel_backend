@@ -22,28 +22,34 @@ public class User implements UserDetails {
     @Column
     @NotNull
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
-    List<Bet> bets;
+    private List<Bet> bets;
+
     @Column
     @NotNull
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_group", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "betgroup_id"))
-    List<BetGroup> betGroups;
+    private List<BetGroup> betGroups;
+
     @Id
     @GeneratedValue
     @Column
     private Long id;
+
     @Column
     @NotNull
     @Size(min = 1, max = 100)
     private String name;
+
     @Column
     @NotNull
     @Size(min = 10, max = 1024)
     private String password;
+
     @Column
     @NotNull
     @Size(min = 10, max = 100)
     private String email;
+
     @Column
     private boolean reminders = true;
 
