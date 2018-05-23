@@ -38,26 +38,6 @@ public class BetGroupService {
         this.argon2PasswordEncoder = argon2PasswordEncoder;
     }
 
-    private List<UserAllBetGroupDTO> createAllUsersInBetGroupDTOList(List<User> users) {
-        List<UserAllBetGroupDTO> dtos = new ArrayList<>();
-        for (User user : users) {
-            UserAllBetGroupDTO dto = new UserAllBetGroupDTO();
-            dto.setId(user.getId());
-            dto.setName(user.getName());
-            dto.setScore(user.getBets().stream().mapToInt(Bet::getScore).sum());
-            dtos.add(dto);
-        }
-        return dtos;
-    }
-
-    private List<BetGroupDTO> createAllBetGroupDTOList(List<BetGroup> betGroups) {
-        List<BetGroupDTO> dtos = new ArrayList<>();
-        for (BetGroup betGroup : betGroups) {
-            dtos.add(convertBetGroupToBetGroupDTO(betGroup));
-        }
-        return dtos;
-    }
-
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<UserAllBetGroupDTO> getAllUsersInBetGroup(Long id) {
         List<User> users = betGroupRepository.getUserInBetGroup(id);
@@ -93,7 +73,7 @@ public class BetGroupService {
         boolean containsUser = betGroupRepository.existsBetGroupsByMembersContaining(user);
         if (!containsUser) {
             if (betGroup.getPassword() != null && password != null) {
-                String pw = password.trim().replace("\"","");
+                String pw = password.trim().replace("\"", "");
                 if (!argon2PasswordEncoder.matches(pw, betGroup.getPassword())) {
                     throw new ResourceNotAllowedException("Wrong password for this bet group!");
                 }
@@ -148,6 +128,26 @@ public class BetGroupService {
             throw new IllegalActionException("Can't delete a bet group with bet group members");
         }
         betGroupRepository.deleteById(id);
+    }
+
+    private List<UserAllBetGroupDTO> createAllUsersInBetGroupDTOList(List<User> users) {
+        List<UserAllBetGroupDTO> dtos = new ArrayList<>();
+        for (User user : users) {
+            UserAllBetGroupDTO dto = new UserAllBetGroupDTO();
+            dto.setId(user.getId());
+            dto.setName(user.getName());
+            dto.setScore(user.getBets().stream().mapToInt(Bet::getScore).sum());
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+
+    private List<BetGroupDTO> createAllBetGroupDTOList(List<BetGroup> betGroups) {
+        List<BetGroupDTO> dtos = new ArrayList<>();
+        for (BetGroup betGroup : betGroups) {
+            dtos.add(convertBetGroupToBetGroupDTO(betGroup));
+        }
+        return dtos;
     }
 
     protected BetGroupDTO convertBetGroupToBetGroupDTO(BetGroup betGroup) {
