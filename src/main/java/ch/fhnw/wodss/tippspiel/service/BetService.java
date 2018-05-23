@@ -62,8 +62,9 @@ public class BetService {
         // Check if date time before game start time
         if (game.getDateTime().isAfter(now)) {
             Bet bet = new Bet();
+            bet.setGame(game);
             bet.setUser(user);
-            bet.setAwayTeamGoals(restBetDTO.getHomeTeamGoals());
+            bet.setHomeTeamGoals(restBetDTO.getHomeTeamGoals());
             bet.setAwayTeamGoals(restBetDTO.getAwayTeamGoals());
             List<Bet> bets = user.getBets();
             bets.add(bet);
@@ -78,7 +79,8 @@ public class BetService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public BetDTO updateBet(Long id, RestBetDTO restBetDTO, User user) {
-        if (!betRepository.existsById(id)) {
+        Optional<Bet> betToUpdate = betRepository.findById(id);
+        if (!betToUpdate.isPresent()) {
             throw new ResourceNotFoundException("No bet was found to change");
         }
         Game game = gameRepository.findById(restBetDTO.getGameId())
@@ -92,9 +94,8 @@ public class BetService {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Paris"));
         // Check if date time before game start time
         if (game.getDateTime().isAfter(now)) {
-            Bet bet = new Bet();
-            bet.setId(id);
-            bet.setAwayTeamGoals(restBetDTO.getHomeTeamGoals());
+            Bet bet = betToUpdate.get();
+            bet.setHomeTeamGoals(restBetDTO.getHomeTeamGoals());
             bet.setAwayTeamGoals(restBetDTO.getAwayTeamGoals());
             bet = betRepository.save(bet);
             return convertBetToBetDTO(bet);
@@ -119,6 +120,9 @@ public class BetService {
         // Check if date time before game start time
         if (game.getDateTime().isAfter(now)) {
             betRepository.deleteById(id);
+            List<Bet> bets = user.getBets();
+            bets.remove(bet);
+            userRepository.save(user);
         } else {
             throw new IllegalActionException("The game has started. The bet can't be deleted.");
         }

@@ -51,4 +51,13 @@ public class Bet {
         this.score = score;
         this.game = game;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) return false;
+        if (other == this) return true;
+        if (!(other instanceof Bet))return false;
+        Bet otherBet = (Bet) other;
+        return otherBet.getId().equals(this.getId());
+    }
 }
