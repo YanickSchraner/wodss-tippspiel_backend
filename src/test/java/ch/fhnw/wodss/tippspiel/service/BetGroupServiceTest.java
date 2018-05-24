@@ -10,7 +10,6 @@ import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.persistance.BetGroupRepository;
 import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
 import ch.fhnw.wodss.tippspiel.security.Argon2PasswordEncoder;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,7 +35,7 @@ public class BetGroupServiceTest {
     @Autowired
     BetGroupService betGroupService;
     @MockBean
-    Argon2PasswordEncoder argon2PasswordEncoder;
+    Argon2PasswordEncoder argon2PasswordEncoderMock;
 
     @MockBean
     private BetGroupRepository betGroupRepositoryMock;
@@ -143,10 +142,10 @@ public class BetGroupServiceTest {
         when(betGroupRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(betGroup));
 
         BetGroupDTO result = betGroupService.getBetGroupById(1L);
-        Assert.assertEquals(betGroup.getId(), result.getId());
-        Assert.assertEquals(betGroup.getName(), result.getName());
-        Assert.assertEquals(betGroup.getScore(), result.getScore());
-        Assert.assertEquals(betGroup.getMembers().get(0).getId(), result.getUserIds().get(0));
+        assertEquals(betGroup.getId(), result.getId());
+        assertEquals(betGroup.getName(), result.getName());
+        assertEquals(betGroup.getScore(), result.getScore());
+        assertEquals(betGroup.getMembers().get(0).getId(), result.getUserIds().get(0));
 
         Mockito.verify(betGroupRepositoryMock, times(1)).findById(1L);
     }
@@ -160,27 +159,91 @@ public class BetGroupServiceTest {
 
     @Test
     public void getBetGroupByName_ok() {
-        //TODO
+        User user = new UserBuilder()
+                .withId(1L)
+                .withName("Tom")
+                .withEmail("tom.ohme@gmx.ch")
+                .build();
+        BetGroup betGroup = new BetGroupBuilder()
+                .withId(1L)
+                .withName("FHNW")
+                .withScore(0)
+                .withMember(user)
+                .withPassword("test123test123test123")
+                .build();
+        when(betGroupRepositoryMock.findBetGroupByNameEquals("FHNW")).thenReturn(Optional.ofNullable(betGroup));
+
+        BetGroupDTO result = betGroupService.getBetGroupByName("FHNW");
+        assertEquals(betGroup.getId(), result.getId());
+        assertEquals(betGroup.getName(), result.getName());
+        assertEquals(betGroup.getScore(), result.getScore());
+        assertEquals(betGroup.getMembers().get(0).getId(), result.getUserIds().get(0));
+
+        verify(betGroupRepositoryMock, times(1)).findBetGroupByNameEquals("FHNW");
     }
 
     @Test(expected = ResourceNotFoundException.class)
     public void getBetGroupByName_notFound() {
-        //TODO
+        when(betGroupRepositoryMock.findBetGroupByNameEquals("FHNW")).thenReturn(Optional.empty());
+
+        betGroupService.getBetGroupByName("FHNW");
+
+        verify(betGroupRepositoryMock, times(1)).findBetGroupByNameEquals("FHNW");
     }
 
     @Test
     public void addUserToBetGroup_ok() {
-        //TODO
-    }
+        User user = new UserBuilder()
+                .withId(1L)
+                .withName("Tom")
+                .withEmail("tom.ohme@gmx.ch")
+                .build();
+        BetGroup betGroup = new BetGroupBuilder()
+                .withId(1L)
+                .withName("FHNW")
+                .withScore(0)
+                .withPassword("hash")
+                .build();
+        when(userRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(user));
+        when(argon2PasswordEncoderMock.encode("test123test123test123")).thenReturn("hash");
+        when(argon2PasswordEncoderMock.matches("hash", "hash")).thenReturn(true);
+        when(userRepositoryMock.save(any(User.class))).thenReturn(user);
 
-    @Test(expected = IllegalActionException.class)
-    public void addUserToBetGroup_exists() {
-        //TODO
+        when(betGroupRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(betGroup));
+        when(betGroupRepositoryMock.save(any())).thenReturn(betGroup);
+
+        BetGroupDTO result = betGroupService.addUser(1L, betGroup.getPassword(), user);
+        assertEquals(betGroup.getId(), result.getId());
+        assertEquals(betGroup.getName(), result.getName());
+        assertEquals(betGroup.getScore(), result.getScore());
+        assertEquals(betGroup.getMembers().get(0).getId(), result.getUserIds().get(0));
+
+        verify(betGroupRepositoryMock, times(1)).existsBetGroupsByMembersContaining(user);
     }
 
     @Test
     public void removeUserFromBetGroup_ok() {
-        //TODO
+        User user = new UserBuilder()
+                .withId(1L)
+                .withName("Tom")
+                .withEmail("tom.ohme@gmx.ch")
+                .build();
+        BetGroup betGroup = new BetGroupBuilder()
+                .withId(1L)
+                .withName("FHNW")
+                .withScore(0)
+                .withMember(user)
+                .withPassword("test123test123test123")
+                .build();
+        when(userRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(user));
+        when(userRepositoryMock.save(any(User.class))).thenReturn(user);
+
+        when(betGroupRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(betGroup));
+        when(betGroupRepositoryMock.save(any())).thenReturn(betGroup);
+
+        betGroupService.removeUserFromBetGroup(1L, user);
+
+        verify(betGroupRepositoryMock, times(1)).existsBetGroupsByMembersContaining(user);
     }
 
     @Test
@@ -207,8 +270,8 @@ public class BetGroupServiceTest {
         BetGroupDTO result = betGroupService.createBetGroup(restBetGroupDTO);
         assertEquals(betGroup.getId(), result.getId());
         assertEquals(betGroup.getName(), result.getName());
-        Assert.assertEquals(betGroup.getScore(), result.getScore());
-        Assert.assertEquals(betGroup.getMembers().get(0).getId(), result.getUserIds().get(0));
+        assertEquals(betGroup.getScore(), result.getScore());
+        assertEquals(betGroup.getMembers().get(0).getId(), result.getUserIds().get(0));
 
         verify(betGroupRepositoryMock, times(1)).findBetGroupByNameEquals("FHNW");
         verify(betGroupRepositoryMock, times(1)).save(any());
@@ -238,21 +301,6 @@ public class BetGroupServiceTest {
 
         verify(betGroupRepositoryMock, times(1)).findBetGroupByNameEquals("FHNW");
         verify(betGroupRepositoryMock, times(0)).save(any());
-    }
-
-    @Test
-    public void deleteBetGroup_ok() {
-        //TODO
-    }
-
-    @Test(expected = IllegalActionException.class)
-    public void deleteBetGroup_hasMembers() {
-        //TODO
-    }
-
-    @Test(expected = ResourceNotFoundException.class)
-    public void deleteBetGroup_notFound() {
-        //TODO
     }
 
 }
