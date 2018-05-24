@@ -23,7 +23,7 @@ public class ApiConnector {
     public void updateGames() {
         wikipediaScraper.scrapeGroupToSemiFinal();
         wikipediaScraper.scrapeSmallFinal();
-        wikipediaScraper.scrapeSmallFinal();
+        wikipediaScraper.scrapeFinal();
         logger.info("New Data scraped from wikipedia.");
     }
 }
