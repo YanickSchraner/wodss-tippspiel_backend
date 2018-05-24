@@ -117,6 +117,7 @@ public class GameService {
 
     private GameDTO convertGameToGameDTO(Game game) {
         GameDTO gameDTO = new GameDTO();
+        gameDTO.setGameId(game.getId());
         gameDTO.setTime(game.getDateTime().toLocalTime().toString());
         gameDTO.setDate(game.getDateTime().toLocalDate().toString());
         gameDTO.setHomeTeamId(game.getHomeTeam().getId());

@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GameDTO {
 
+    @JsonProperty("game_id")
+    private long gameId;
     @JsonProperty("homeTeam_id")
     private long homeTeamId;
     @JsonProperty("awayTeam_id")
