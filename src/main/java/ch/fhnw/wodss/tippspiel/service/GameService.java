@@ -59,10 +59,10 @@ public class GameService {
         Game game = new Game();
         LocalDateTime localDateTime = LocalDateTime.parse(restGameDTO.getDate()+"T"+restGameDTO.getTime());
         game.setDateTime(localDateTime);
-        game.setHomeTeam(tournamentTeamRepository.findById(restGameDTO.getHomeTeamId()).orElseThrow(() -> new ResourceNotFoundException("Home team with id " + restGameDTO.getHomeTeamId() + "not found!")));
-        game.setAwayTeam(tournamentTeamRepository.findById(restGameDTO.getAwayTeamId()).orElseThrow(() -> new ResourceNotFoundException("Away team with id " + restGameDTO.getAwayTeamId() + "not found!")));
-        game.setLocation(locationRepository.findById(restGameDTO.getLocationId()).orElseThrow(() -> new ResourceNotFoundException("Location with id " + restGameDTO.getLocationId() + "not found!")));
-        game.setPhase(phaseRepository.findById(restGameDTO.getPhaseId()).orElseThrow(() -> new ResourceNotFoundException("Phase with id " + restGameDTO.getPhaseId() + "not found!")));
+        game.setHomeTeam(tournamentTeamRepository.findById(restGameDTO.getHomeTeamId()).orElseThrow(() -> new ResourceNotFoundException("Home team with id " + restGameDTO.getHomeTeamId() + " not found!")));
+        game.setAwayTeam(tournamentTeamRepository.findById(restGameDTO.getAwayTeamId()).orElseThrow(() -> new ResourceNotFoundException("Away team with id " + restGameDTO.getAwayTeamId() + " not found!")));
+        game.setLocation(locationRepository.findById(restGameDTO.getLocationId()).orElseThrow(() -> new ResourceNotFoundException("Location with id " + restGameDTO.getLocationId() + " not found!")));
+        game.setPhase(phaseRepository.findById(restGameDTO.getPhaseId()).orElseThrow(() -> new ResourceNotFoundException("Phase with id " + restGameDTO.getPhaseId() + " not found!")));
         if (gameRepository.existsGameByHomeTeamAndAwayTeamAndDateTimeEquals(game.getHomeTeam(), game.getAwayTeam(), game.getDateTime())) {
             throw new IllegalActionException("Can't create an identical game");
         }
