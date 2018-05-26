@@ -1,6 +1,7 @@
 package ch.fhnw.wodss.tippspiel.service;
 
 import ch.fhnw.wodss.tippspiel.builder.BetBuilder;
+import ch.fhnw.wodss.tippspiel.builder.BetGroupBuilder;
 import ch.fhnw.wodss.tippspiel.builder.RestUserDTOBuilder;
 import ch.fhnw.wodss.tippspiel.builder.UserBuilder;
 import ch.fhnw.wodss.tippspiel.domain.Bet;
@@ -11,6 +12,7 @@ import ch.fhnw.wodss.tippspiel.dto.UserDTO;
 import ch.fhnw.wodss.tippspiel.dto.UserRankingDTO;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
+import ch.fhnw.wodss.tippspiel.persistance.BetGroupRepository;
 import ch.fhnw.wodss.tippspiel.persistance.RoleRepository;
 import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
 import ch.fhnw.wodss.tippspiel.security.Argon2PasswordEncoder;
@@ -53,9 +55,12 @@ public class UserServiceTest {
     @MockBean
     RoleRepository roleRepositoryMock;
 
+    @MockBean
+    BetGroupRepository betGroupRepositoryMock;
+
     @Before
     public void setup() {
-        Mockito.reset(userRepositoryMock, betServiceMock, betGroupServiceMock, argon2PasswordEncoderMock, roleRepositoryMock);
+        Mockito.reset(userRepositoryMock, betServiceMock, betGroupServiceMock, argon2PasswordEncoderMock, roleRepositoryMock, betGroupRepositoryMock);
     }
 
 
@@ -386,8 +391,11 @@ public class UserServiceTest {
                 .build();
 
         when(userRepositoryMock.existsById(1L)).thenReturn(true);
+        when(userRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(user));
+        when(betGroupRepositoryMock.save(any())).thenReturn(new BetGroupBuilder().build());
         userService.deleteUser(1L, user);
         verify(userRepositoryMock, times(1)).existsById(1L);
+        verify(userRepositoryMock, times(1)).findById(1L);
         verify(userRepositoryMock, times(1)).deleteById(1L);
     }
 
@@ -444,7 +452,7 @@ public class UserServiceTest {
 
         when(userRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(user));
         when(argon2PasswordEncoderMock.encode("passwordpassword")).thenReturn("hash");
-        when(argon2PasswordEncoderMock.matches("hash", "hash")).thenReturn(true);
+        when(argon2PasswordEncoderMock.matches("passwordpassword", "hash")).thenReturn(true);
         when(userRepositoryMock.save(any(User.class))).thenReturn(user);
 
         UserDTO result = userService.updateUser(user, restUserDTO);
@@ -453,8 +461,8 @@ public class UserServiceTest {
         Assert.assertEquals(restUserDTO.isDailyResults(), result.getDailyResults());
 
         verify(userRepositoryMock, times(1)).findById(1L);
-        verify(argon2PasswordEncoderMock, times(2)).encode("passwordpassword");
-        verify(argon2PasswordEncoderMock, times(1)).matches("hash", "hash");
+        verify(argon2PasswordEncoderMock, times(1)).encode("passwordpassword");
+        verify(argon2PasswordEncoderMock, times(1)).matches("passwordpassword", "hash");
         verify(userRepositoryMock, times(1)).save(any(User.class));
     }
 
@@ -487,7 +495,7 @@ public class UserServiceTest {
         verify(userRepositoryMock, times(0)).save(any(User.class));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = IllegalActionException.class)
     public void updateUser_invalidEmail() {
         User user = new UserBuilder()
                 .withId(1L)

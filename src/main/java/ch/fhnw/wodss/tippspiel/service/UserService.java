@@ -1,10 +1,12 @@
 package ch.fhnw.wodss.tippspiel.service;
 
+import ch.fhnw.wodss.tippspiel.domain.BetGroup;
 import ch.fhnw.wodss.tippspiel.domain.Role;
 import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.dto.*;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
+import ch.fhnw.wodss.tippspiel.persistance.BetGroupRepository;
 import ch.fhnw.wodss.tippspiel.persistance.RoleRepository;
 import ch.fhnw.wodss.tippspiel.persistance.UserRepository;
 import ch.fhnw.wodss.tippspiel.security.Argon2PasswordEncoder;
@@ -36,14 +38,16 @@ public class UserService {
     private final BetGroupService betGroupService;
     private final Argon2PasswordEncoder argon2PasswordEncoder;
     private final RoleRepository roleRepository;
+    private final BetGroupRepository betGroupRepository;
 
     @Autowired
-    public UserService(UserRepository repository, BetGroupService betGroupService, BetService betService, Argon2PasswordEncoder argon2PasswordEncoder, RoleRepository roleRepository) {
+    public UserService(UserRepository repository, BetGroupService betGroupService, BetService betService, Argon2PasswordEncoder argon2PasswordEncoder, RoleRepository roleRepository, BetGroupRepository betGroupRepository) {
         this.repository = repository;
         this.betGroupService = betGroupService;
         this.betService = betService;
         this.argon2PasswordEncoder = argon2PasswordEncoder;
         this.roleRepository = roleRepository;
+        this.betGroupRepository = betGroupRepository;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -109,7 +113,15 @@ public class UserService {
     public void deleteUser(Long id, User user) {
         if (!id.equals(user.getId())) throw new IllegalActionException("You can't delete another user!");
         if (repository.existsById(id)) {
+            user = repository.findById(id).get();
+            for (BetGroup betGroup : user.getBetGroups()) {
+                List<User> betgroupMembers = betGroup.getMembers();
+                betgroupMembers.remove(user);
+                betGroup.setMembers(betgroupMembers);
+                betGroupRepository.saveAndFlush(betGroup);
+            }
             repository.deleteById(id);
+
         } else {
             throw new IllegalActionException("Operation failed.");
         }
@@ -118,15 +130,18 @@ public class UserService {
     @Transactional(propagation = Propagation.REQUIRED)
     public UserDTO updateUser(User user, RestUserDTO restUserDTO) {
         Optional<User> userToUpdate = repository.findById(user.getId());
+        if(!user.getEmail().equals(restUserDTO.getEmail()) &&  repository.findUserByEmailEquals(restUserDTO.getEmail()).isPresent()) {
+            throw new IllegalActionException("This email adress is already in use by another user!");
+        }
         if (userToUpdate.isPresent()) {
             userToUpdate.get().setName(restUserDTO.getName());
             if (!isValidEmail(restUserDTO.getEmail()))
-                throw new IllegalArgumentException("Please provida a valid email");
+                throw new IllegalActionException("Please provida a valid email");
             userToUpdate.get().setEmail(restUserDTO.getEmail());
             userToUpdate.get().setDailyResults(restUserDTO.isDailyResults());
             userToUpdate.get().setReminders(restUserDTO.isReminders());
             if (restUserDTO.getNewPassword() != null) {
-                boolean correctPW = argon2PasswordEncoder.matches(userToUpdate.get().getPassword(), argon2PasswordEncoder.encode(restUserDTO.getPassword()));
+                boolean correctPW = argon2PasswordEncoder.matches(restUserDTO.getPassword(), userToUpdate.get().getPassword());
                 if (!correctPW) throw new IllegalActionException("Operation failed.");
                 if (restUserDTO.getPassword().length() < 10) throw new IllegalActionException("Operation failed.");
                 userToUpdate.get().setPassword(argon2PasswordEncoder.encode(restUserDTO.getNewPassword()));

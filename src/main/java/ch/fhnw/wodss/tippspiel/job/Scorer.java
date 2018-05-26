@@ -68,7 +68,10 @@ public class Scorer {
     @Transactional(propagation = Propagation.REQUIRED)
     public void updateBetGroupScore() {
         for (BetGroup betGroup : betGroupRepository.findAll()) {
-            double score = betGroup.getMembers().stream().mapToInt(user -> user.getBets().stream().mapToInt(Bet::getScore).sum()).average().orElse(0);
+            double score = betGroup.getMembers().stream()
+                    .mapToInt(user -> user.getBets() == null ? 0 : user.getBets()
+                    .stream().mapToInt(bet -> bet.getScore() == null ? 0 : bet.getScore())
+                    .sum()).average().orElse(0);
             betGroup.setScore((int) score);
             betGroupRepository.save(betGroup);
         }

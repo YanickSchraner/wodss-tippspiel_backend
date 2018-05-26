@@ -21,7 +21,7 @@ public class User implements UserDetails {
 
     @Column
     @NotNull
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.REMOVE)
     private List<Bet> bets;
 
     @Column
