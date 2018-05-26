@@ -108,7 +108,7 @@ public class BetGroupService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public BetGroupDTO createBetGroup(RestBetGroupDTO restBetGroupDTO) {
+    public BetGroupDTO createBetGroup(RestBetGroupDTO restBetGroupDTO, User user) {
         if (betGroupRepository.findBetGroupByNameEquals(restBetGroupDTO.getName()).isPresent()) {
             throw new IllegalActionException("A bet group with name: " + restBetGroupDTO.getName() + " already exists.");
         }
@@ -117,7 +117,14 @@ public class BetGroupService {
         if (restBetGroupDTO.getPassword() != null) {
             betGroup.setPassword(argon2PasswordEncoder.encode(restBetGroupDTO.getPassword()));
         }
+        List<User> members = new ArrayList<>();
+        members.add(user);
+        betGroup.setMembers(members);
         betGroup = betGroupRepository.save(betGroup);
+        List<BetGroup> betGroups = new ArrayList<>();
+        betGroups.add(betGroup);
+        user.setBetGroups(betGroups);
+        userRepository.save(user);
         return convertBetGroupToBetGroupDTO(betGroup);
     }
 

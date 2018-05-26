@@ -249,7 +249,7 @@ public class BetGroupControllerTest {
                 .withName("FHNW")
                 .withPassword("passwordpassword")
                 .build();
-        when(betGroupServiceMock.createBetGroup(any())).thenReturn(betGroupDTO1);
+        when(betGroupServiceMock.createBetGroup(any(), any())).thenReturn(betGroupDTO1);
         mockMvc.perform(post("/betgroups")
                 .headers(buildCORSHeaders())
                 .header("accept", "application/json")
@@ -259,7 +259,7 @@ public class BetGroupControllerTest {
                 .andExpect(jsonPath("$.id", equalTo(1)))
                 .andExpect(jsonPath("$.name", equalTo("FHNW")))
                 .andExpect(jsonPath("$.score", equalTo(220)));
-        verify(betGroupServiceMock, times(1)).createBetGroup(any());
+        verify(betGroupServiceMock, times(1)).createBetGroup(any(), any());
     }
 
     @Test
@@ -278,7 +278,7 @@ public class BetGroupControllerTest {
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(restBetGroupDTO1)))
                 .andExpect(status().isBadRequest());
-        verify(betGroupServiceMock, times(0)).createBetGroup(any());
+        verify(betGroupServiceMock, times(0)).createBetGroup(any(), any());
     }
 
     @Test
@@ -293,7 +293,7 @@ public class BetGroupControllerTest {
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(restBetGroupDTO1)))
                 .andExpect(status().isForbidden());
-        verify(betGroupServiceMock, times(0)).createBetGroup(any());
+        verify(betGroupServiceMock, times(0)).createBetGroup(any(), any());
     }
 
     @Test

@@ -267,7 +267,7 @@ public class BetGroupServiceTest {
         when(betGroupRepositoryMock.findBetGroupByNameEquals("FHNW")).thenReturn(Optional.empty());
         when(betGroupRepositoryMock.save(any())).thenReturn(betGroup);
 
-        BetGroupDTO result = betGroupService.createBetGroup(restBetGroupDTO);
+        BetGroupDTO result = betGroupService.createBetGroup(restBetGroupDTO, user);
         assertEquals(betGroup.getId(), result.getId());
         assertEquals(betGroup.getName(), result.getName());
         assertEquals(betGroup.getScore(), result.getScore());
@@ -297,7 +297,7 @@ public class BetGroupServiceTest {
                 .build();
         when(betGroupRepositoryMock.findBetGroupByNameEquals("FHNW")).thenReturn(Optional.ofNullable(betGroup));
 
-        betGroupService.createBetGroup(restBetGroupDTO);
+        betGroupService.createBetGroup(restBetGroupDTO, user);
 
         verify(betGroupRepositoryMock, times(1)).findBetGroupByNameEquals("FHNW");
         verify(betGroupRepositoryMock, times(0)).save(any());
