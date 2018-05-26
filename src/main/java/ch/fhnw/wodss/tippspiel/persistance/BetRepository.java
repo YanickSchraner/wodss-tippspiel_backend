@@ -15,6 +15,8 @@ public interface BetRepository extends JpaRepository<Bet, Long> {
 
     boolean existsBetByUser_IdAndGame_Id(Long userId, Long gameId);
 
+    List<Bet> getAllByGame_Id(Long gameId);
+
     @Query("SELECT b FROM Bet b WHERE b.user = :betUser")
     List<Bet> getBetsForUser(@Param("betUser") User user);
 

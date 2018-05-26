@@ -2,10 +2,10 @@ package ch.fhnw.wodss.tippspiel.controller;
 
 import ch.fhnw.wodss.tippspiel.dto.GameDTO;
 import ch.fhnw.wodss.tippspiel.dto.RestGameDTO;
+import ch.fhnw.wodss.tippspiel.dto.StatistikDTO;
 import ch.fhnw.wodss.tippspiel.service.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,5 +60,11 @@ public class GameController {
     public ResponseEntity<String> deleteGame(@PathVariable Long id) {
         service.deleteGame(id);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/bets/{id}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<StatistikDTO> createGameBetStatistiks(@PathVariable Long id) {
+        return new ResponseEntity<>(service.createGameBetStatistiks(id), HttpStatus.OK);
     }
 }

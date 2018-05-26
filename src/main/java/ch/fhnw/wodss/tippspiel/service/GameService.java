@@ -1,8 +1,10 @@
 package ch.fhnw.wodss.tippspiel.service;
 
+import ch.fhnw.wodss.tippspiel.domain.Bet;
 import ch.fhnw.wodss.tippspiel.domain.Game;
 import ch.fhnw.wodss.tippspiel.dto.GameDTO;
 import ch.fhnw.wodss.tippspiel.dto.RestGameDTO;
+import ch.fhnw.wodss.tippspiel.dto.StatistikDTO;
 import ch.fhnw.wodss.tippspiel.exception.IllegalActionException;
 import ch.fhnw.wodss.tippspiel.exception.ResourceNotFoundException;
 import ch.fhnw.wodss.tippspiel.persistance.*;
@@ -57,7 +59,7 @@ public class GameService {
     @Transactional(propagation = Propagation.REQUIRED)
     public GameDTO addGame(RestGameDTO restGameDTO) {
         Game game = new Game();
-        LocalDateTime localDateTime = LocalDateTime.parse(restGameDTO.getDate()+"T"+restGameDTO.getTime());
+        LocalDateTime localDateTime = LocalDateTime.parse(restGameDTO.getDate() + "T" + restGameDTO.getTime());
         game.setDateTime(localDateTime);
         game.setHomeTeam(tournamentTeamRepository.findById(restGameDTO.getHomeTeamId()).orElseThrow(() -> new ResourceNotFoundException("Home team with id " + restGameDTO.getHomeTeamId() + " not found!")));
         game.setAwayTeam(tournamentTeamRepository.findById(restGameDTO.getAwayTeamId()).orElseThrow(() -> new ResourceNotFoundException("Away team with id " + restGameDTO.getAwayTeamId() + " not found!")));
@@ -104,7 +106,7 @@ public class GameService {
         Optional<Game> game = gameRepository.findById(id);
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Paris"));
         if (game.isPresent()) {
-            if (game.get().getDateTime().isAfter(now)) {
+            if (game.get().getDateTime().isBefore(now)) {
                 throw new IllegalActionException("Can't set Score for a game which hasn't been played jet.");
             }
             game.get().setHomeTeamGoals(homeTeamScore);
@@ -115,8 +117,44 @@ public class GameService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
+    public StatistikDTO createGameBetStatistiks(Long id) {
+        Optional<Game> game = gameRepository.findById(id);
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Paris"));
+        if (game.isPresent()) {
+            if (game.get().getDateTime().isAfter(now)) {
+                StatistikDTO statistikDTO = new StatistikDTO();
+                statistikDTO.setGameStarted(false);
+                return statistikDTO;
+            }
+            StatistikDTO statistikDTO = new StatistikDTO();
+            statistikDTO.setDraw(0);
+            statistikDTO.setHomeLose(0);
+            statistikDTO.setHomeWin(0);
+            statistikDTO.setGameStarted(true);
+            List<Bet> bets = betRepository.getAllByGame_Id(id);
+            for (Bet bet : bets) {
+                if (bet.getHomeTeamGoals() > bet.getAwayTeamGoals()) {
+                    statistikDTO.setHomeWin(statistikDTO.getHomeWin() + 1);
+                } else if (bet.getHomeTeamGoals() < bet.getAwayTeamGoals()) {
+                    statistikDTO.setHomeLose(statistikDTO.getHomeLose() + 1);
+                } else {
+                    statistikDTO.setDraw(statistikDTO.getDraw() + 1);
+                }
+            }
+            return statistikDTO;
+        } else {
+            throw new ResourceNotFoundException("Could not find game with id " + id + ".");
+        }
+    }
+
     private GameDTO convertGameToGameDTO(Game game) {
         GameDTO gameDTO = new GameDTO();
+        gameDTO.setStarted(false);
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Paris"));
+        if (game.getDateTime().isBefore(now)) {
+            gameDTO.setStarted(true);
+        }
         gameDTO.setGameId(game.getId());
         gameDTO.setTime(game.getDateTime().toLocalTime().toString());
         gameDTO.setDate(game.getDateTime().toLocalDate().toString());
