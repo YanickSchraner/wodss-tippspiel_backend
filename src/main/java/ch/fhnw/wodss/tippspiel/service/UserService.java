@@ -1,6 +1,5 @@
 package ch.fhnw.wodss.tippspiel.service;
 
-import ch.fhnw.wodss.tippspiel.domain.Bet;
 import ch.fhnw.wodss.tippspiel.domain.Role;
 import ch.fhnw.wodss.tippspiel.domain.User;
 import ch.fhnw.wodss.tippspiel.dto.*;
@@ -166,7 +165,7 @@ public class UserService {
             UserRankingDTO dto = new UserRankingDTO();
             dto.setId(user.getId());
             dto.setName(user.getName());
-            dto.setScore(user.getBets().stream().mapToInt(Bet::getScore).sum());
+            dto.setScore(user.getBets().stream().mapToInt(bet -> bet.getScore() == null ? 0: bet.getScore()).sum());
             dtos.add(dto);
         }
         return dtos;
