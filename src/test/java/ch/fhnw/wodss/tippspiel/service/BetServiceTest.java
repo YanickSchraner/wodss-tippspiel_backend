@@ -179,6 +179,7 @@ public class BetServiceTest {
         when(betRepositoryMock.existsBetByUser_IdAndGame_Id(1L, 1L)).thenReturn(false);
         when(betRepositoryMock.save(any())).thenReturn(bet);
         when(userRepositoryMock.save(user)).thenReturn(user);
+        when(userRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(user));
         BetDTO result = betService.addBet(restBet, user);
         Assert.assertEquals((long)bet.getId(), result.getId());
         Mockito.verify(gameRepositoryMock, times(1)).findById(1L);

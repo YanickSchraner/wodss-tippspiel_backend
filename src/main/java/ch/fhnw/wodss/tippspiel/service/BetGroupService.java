@@ -81,7 +81,12 @@ public class BetGroupService {
             users.add(user);
             betGroup.setMembers(users);
             betGroup.setId(betGroupId);
-            betGroupRepository.save(betGroup);
+            betGroup = betGroupRepository.saveAndFlush(betGroup);
+            user = userRepository.findById(user.getId()).get();
+            List<BetGroup> betGroups = user.getBetGroups();
+            betGroups.add(betGroup);
+            user.setBetGroups(betGroups);
+            userRepository.save(user);
             return convertBetGroupToBetGroupDTO(betGroup);
         } else {
             throw new IllegalActionException("User with name: " + user.getName() + " is already part of the given bet group.");
@@ -100,6 +105,11 @@ public class BetGroupService {
             users.remove(user);
             betGroup.setMembers(users);
             betGroupRepository.saveAndFlush(betGroup);
+            user = userRepository.findById(user.getId()).get();
+            List<BetGroup> betGroups = user.getBetGroups();
+            betGroups.remove(betGroup);
+            user.setBetGroups(betGroups);
+            userRepository.save(user);
             if (betGroup.getMembers().isEmpty()) {
                 deleteBetGroup(betGroupId);
             }

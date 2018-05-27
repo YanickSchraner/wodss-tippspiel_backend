@@ -61,6 +61,7 @@ public class BetService {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Paris"));
         // Check if date time before game start time
         if (game.getDateTime().isAfter(now)) {
+            user = userRepository.findById(user.getId()).get();
             Bet bet = new Bet();
             bet.setGame(game);
             bet.setUser(user);

@@ -210,7 +210,7 @@ public class BetGroupServiceTest {
         when(userRepositoryMock.save(any(User.class))).thenReturn(user);
 
         when(betGroupRepositoryMock.findById(1L)).thenReturn(Optional.ofNullable(betGroup));
-        when(betGroupRepositoryMock.save(any())).thenReturn(betGroup);
+        when(betGroupRepositoryMock.saveAndFlush(any())).thenReturn(betGroup);
 
         BetGroupDTO result = betGroupService.addUser(1L, betGroup.getPassword(), user);
         assertEquals(betGroup.getId(), result.getId());
