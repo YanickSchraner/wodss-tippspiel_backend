@@ -151,8 +151,10 @@ public class WikipediaScraper {
             Game game = gameRepository.findFirstByHomeTeamEqualsAndAwayTeamEqualsAndDateTimeIsBetween
                     (homeTeam, awayTeam, localDateTime.minusMinutes(10), localDateTime.plusMinutes(10))
                     .orElse(new Game(localDateTime, homeScore, awayScore, homeTeam, awayTeam, location, phase));
-            game.setHomeTeamGoals(homeScore);
-            game.setAwayTeamGoals(awayScore);
+            if(game.getHomeTeamGoals() == null && game.getAwayTeamGoals() == null) {
+                game.setHomeTeamGoals(homeScore);
+                game.setAwayTeamGoals(awayScore);
+            }
             game.setAwayTeam(awayTeam);
             game.setHomeTeam(homeTeam);
             game.setLocation(location);
@@ -224,8 +226,10 @@ public class WikipediaScraper {
         Game game = gameRepository.findFirstByHomeTeamEqualsAndAwayTeamEqualsAndDateTimeIsBetween
                 (homeTeam, awayTeam, localDateTime.minusMinutes(10), localDateTime.plusMinutes(10))
                 .orElse(new Game(localDateTime, homeScore, awayScore, homeTeam, awayTeam, location, phase));
-        game.setHomeTeamGoals(homeScore);
-        game.setAwayTeamGoals(awayScore);
+        if(game.getHomeTeamGoals() == null && game.getAwayTeamGoals() == null) {
+            game.setHomeTeamGoals(homeScore);
+            game.setAwayTeamGoals(awayScore);
+        }
         game.setAwayTeam(awayTeam);
         game.setHomeTeam(homeTeam);
         game.setLocation(location);
