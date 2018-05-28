@@ -13,11 +13,17 @@ DB User Password: 3k:Vp:JzS,R)r5U](g
 If you want the wikipedia scraper to load on application startup all games, teams, locations and tournament groups from wikipedia into the local database, you have to set the scraper.onstartup parameter in application.propperties to true.
 
 To use the backend localy you have to set those parameters in the application.properties file:
+
 server.ssl.key-store=classpath:keystore.jks
+
 server.ssl.key-password=keypassword
+
 server.ssl.key-store-password=storepassword
+
 server.ssl.key-alias=tomcat
+
 server.ssl.enabled-protocols=TLSv1.2
+
 server.ssl.ciphers=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
 
 Now you can run the application by executing:
