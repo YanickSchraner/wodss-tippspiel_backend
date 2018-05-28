@@ -24,7 +24,7 @@ public class BetGroupMembershipController {
 
     @PostMapping(value = "/{id}", produces= "application/json", consumes = "text/plain")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BetGroupDTO> addUserToBetGroup(@PathVariable Long id, @AuthenticationPrincipal User user, @RequestBody String password) {
+    public ResponseEntity<BetGroupDTO> addUserToBetGroup(@PathVariable Long id, @AuthenticationPrincipal User user, @RequestBody(required = false) String password) {
         BetGroupDTO betGroup = service.addUser(id, password, user);
         return new ResponseEntity<>(betGroup, HttpStatus.CREATED);
     }

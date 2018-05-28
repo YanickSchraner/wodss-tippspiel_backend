@@ -71,9 +71,8 @@ public class BetGroupService {
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find bet group with id: " + betGroupId));
         boolean containsUser = betGroupRepository.existsBetGroupsByMembersContaining(user);
         if (!containsUser) {
-            if (betGroup.getPassword() != null && password != null) {
-                String pw = password.trim().replace("\"", "");
-                if (!argon2PasswordEncoder.matches(pw, betGroup.getPassword())) {
+            if (betGroup.getPassword() != null) {
+                if (password == null || !argon2PasswordEncoder.matches(password, betGroup.getPassword())) {
                     throw new ResourceNotAllowedException("Wrong password for this bet group!");
                 }
             }
